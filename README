@@ -1,8 +1,8 @@
                                  Compress::Zlib
 
-                                  Version 1.03
+                                  Version 1.04
 
-                                  17th Mar 1999
+                                  27th May 1999
 
              Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
          This program is free software; you can redistribute it and/or
@@ -30,7 +30,7 @@ thing installed on your system:
       The zlib compression library is available at
       ftp://ftp.uu.net/pub/archiving/zip/zlib* and
       ftp://swrinde.nde.swri.edu/pub/png/src/zlib*.
-      The zlib home page is http://quest.jpl.nasa.gov/zlib/.
+      The zlib home page is http://www.cdrom.com/pub/infozip/zlib/
 
 
 BUILDING THE MODULE
@@ -161,5 +161,9 @@ CHANGES
 
       * Updated to use the new PL_ symbols. 
         Means the module can be built with Perl 5.005_5*
+
+  1.04 - 27 May 1999
+
+      * Bug 19990527.001: compress(undef) core dumps -- Fixed.	
 
 Paul Marquess <Paul.Marquess@btinternet.com>

@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 17th March 1999
-# Version : 1.03
+# Created : 27th May 1999
+# Version : 1.04
 #
 #     Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -70,7 +70,7 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD
 );
 
 
-$VERSION = "1.03" ;
+$VERSION = "1.04" ;
 
 
 sub AUTOLOAD {
@@ -1017,5 +1017,12 @@ Patched zlib.t for OS/2. Thanks to Ilya Zakharevich for the patch.
 Updated to use the new PL_ symbols. 
 Means the module can be built with Perl 5.005_5*
 
+=head2 1.04 27 May 1999
+
+=over 5
+
+=item 1.
+
+Bug 19990527.001: compress(undef) core dumps -- Fixed.
 
 =back

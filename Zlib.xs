@@ -1,7 +1,7 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <Paul.Marquess@btinternet.com>
- * Created : 17th March 1999
- * Version : 1.03
+ * Created : 27th May 1999
+ * Version : 1.04
  *
  *   Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
@@ -86,6 +86,7 @@ static char *my_z_errmsg[] = {
 static uLong adlerInitial ;
 static uLong crcInitial ;
 static int trace = 0 ;
+SV *sv_NULL ;
 
 static void
 SetGzErrorNo(error_no)
@@ -211,6 +212,9 @@ char * string;
 	    croak("%s: buffer parameter is a reference to a reference", string) ;
     }
 
+    if (!SvOK(sv)) { 
+        sv = sv_NULL ;
+    }	
     return sv ;
 }
 
@@ -491,6 +495,7 @@ BOOT:
         sv_setpv(gzerror_sv, "") ;
         SvIOK_on(gzerror_sv) ;
     }
+    sv_NULL = newSVpvn("", 0);
 
 
 #define Zip_zlib_version()	(char*)zlib_version
