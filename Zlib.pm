@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 29 April 2003
-# Version : 1.22
+# Created : 28 October 2003
+# Version : 1.30
 #
 #     Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@ local ($^W) = 1; #use warnings ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 use vars qw($deflateDefault $deflateParamsDefault $inflateDefault);
 
-$VERSION = "1.22" ;
+$VERSION = "1.30" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -95,7 +95,7 @@ bootstrap Compress::Zlib $VERSION ;
 
 # Preloaded methods go here.
 
-sub isaFilehandle
+sub isaFilehandle($)
 {
     my $fh = shift ;
 
@@ -104,14 +104,14 @@ sub isaFilehandle
 
 }
 
-sub isaFilename
+sub isaFilename($)
 {
     my $name = shift ;
 
     return (! ref $name and UNIVERSAL::isa(\$name, 'SCALAR')) ;
 }
 
-sub gzopen
+sub gzopen($$)
 {
     my ($file, $mode) = @_ ;
  
@@ -194,7 +194,7 @@ $inflateDefault = {
 	} ;
 
 
-sub deflateInit
+sub deflateInit(@)
 {
     my ($got) = ParseParameters($deflateDefault, @_) ;
     local ($^W) = 0; #no warnings;
@@ -206,7 +206,7 @@ sub deflateInit
 		
 }
 
-sub inflateInit
+sub inflateInit(@)
 {
     my ($got) = ParseParameters($inflateDefault, @_) ;
     local ($^W) = 0; #no warnings;
@@ -315,7 +315,7 @@ use constant RESERVED	=> 0xE0 ;
 
 use constant MIN_HDR_SIZE => 10 ; # minimum gzip header size
  
-sub memGzip
+sub memGzip($)
 {
   my $x = deflateInit(
                       -Level         => Z_BEST_COMPRESSION(),
@@ -346,7 +346,7 @@ sub memGzip
   return join "", @m;
 }
 
-sub _removeGzipHeader
+sub _removeGzipHeader($)
 {
     my $string = shift ;
 
@@ -405,7 +405,7 @@ sub _removeGzipHeader
 }
 
 
-sub memGunzip
+sub memGunzip($)
 {
     # if the buffer isn't a reference, make it one
     my $string = (ref $_[0] ? $_[0] : \$_[0]);
@@ -934,11 +934,19 @@ number of bytes actually written, or 0 on error.
 
 =item B<$status = $gz-E<gt>gzflush($flush) ;>
 
-Flushes all pending output into the compressed file.
+Flushes all pending output to the compressed file.
 Works identically to the I<zlib> function it interfaces to. Note that
 the use of B<gzflush> can degrade compression.
 
+Returns C<Z_OK> if B<$flush> is C<Z_FINISH> and all output could be
+flushed. Otherwise the zlib error code is returned.
+
 Refer to the I<zlib> documentation for the valid values of B<$flush>.
+
+=item B<$status = $gz-E<gt>gzeof() ;>
+
+Returns 1 if the end of file has been detected while reading the input
+file, otherwise returns 0.
 
 =item B<$gz-E<gt>gzclose>
 
@@ -1106,8 +1114,9 @@ This function is used to uncompress an in-memory gzip file.
 If successful, it returns the uncompressed gzip file, otherwise it
 returns undef.
 
-The buffer parameter can either be a scalar or a scalar reference. The contents
-of the buffer parameter are destroyed after calling this function.
+The buffer parameter can either be a scalar or a scalar reference. The
+contents of the buffer parameter are destroyed after calling this
+function.
 
 =head1 CHECKSUM FUNCTIONS
 
@@ -1164,7 +1173,7 @@ F<pmqs@cpan.org>. The latest copy of the module can be
 found on CPAN in F<modules/by-module/Compress/Compress-Zlib-x.x.tar.gz>.
 
 The primary site for the I<zlib> compression library is
-F<http://www.gzip.org/zlib/>.
+F<http://www.zlib.org>.
 
 =head1 MODIFICATION HISTORY
 

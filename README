@@ -1,13 +1,18 @@
                                  Compress::Zlib
 
-                                  Version 1.22
+                                  Version 1.30
 
-                                  17 June 2003
+                                  21 June 2003
 
              Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
             This program is free software; you can redistribute it and/or
                 modify it under the same terms as Perl itself.
 
+           The directory zlib contains a subset of the source files copied 
+	   directly from zlib version 1.1.4.  These files are Copyright(C) 
+	            1995-2002 Jean-loup Gailly and Mark Adler.
+                 Full source for the zlib library is available at 
+	                      http://www.zlib.org
 
 
 DESCRIPTION
@@ -34,26 +39,11 @@ installed on your system:
 
     * Perl 5.004 or better. 
 
-    * The zlib compression library, version 1.0.2 or better 
-      NOTE that this module is NOT compatible with versions of zlib <= 1.0.1
+By default, Compress::Zlib will build its own private copy of the zlib
+library. If you want to use a different version of zlib, follow the
+instructions in the section called "Controlling the version of zlib used
+by Compress::Zlib" later in this document.
 
-      The zlib compression library is available at
-
-          http://www.gzip.org/zlib/
-
-
-When building Compress::Zlib, you can optionally build the zlib library
-at the same time. If you are running Windows 95/98/NT, this
-seems to be the most straightforward option. If you don't have access
-to a C compiler see the Win32 Notes section.
-
-If you want Compress::Zlib to build zlib, fetch a copy of the zlib
-distribution from the site mentioned above and unpack it into the
-Compress::Zlib source directory. If you have fetched zlib 1.1.4, it will
-create a directory called zlib-1.1.4.
-
-Now, whether you are building zlib or not, edit the file config.in and
-follow the instructions given in it.
 
 BUILDING THE MODULE
 -------------------
@@ -61,14 +51,11 @@ BUILDING THE MODULE
 Assuming you have met all the prerequisites, the module can now be built
 using this sequence of commands:
 
-Step 1 :  Edit the file config.in to suit you local installation.
-          Instructions are given in the file. 
+    perl Makefile.PL
+    make
+    make test
 
-Step 2 :  Build and test the module using this sequence of commands:
 
-              perl Makefile.PL
-              make
-              make test
 
 INSTALLATION
 ------------
@@ -83,6 +70,98 @@ UPDATES
 The most recent version of Compress::Zlib is always available at
  
     http://www.cpan.org/modules/by-module/Compress/
+
+
+
+Controlling the version of zlib used by Compress::Zlib
+-----------------------------------------------------
+
+Compress::Zlib interfaces to the zlib compression library. There are
+three options available to control which version/instance of the zlib
+library is used:
+
+    1. Build a private copy of the zlib library using the zlib library
+       source that is included with this module.
+       This is the default and recommended option.
+
+    2. Build a private copy of the zlib library using a standard zlib
+       source distribution.
+
+    3. Use a pre-buiild zlib library.
+
+Note that if you intend to use either Option 2 or 3, you need to have
+zlib version 1.0.2 or better.
+
+
+The contents of the file config.in are used to control which of the
+three options is actually used. This file is used during the
+
+    perl Makefile.PL 
+
+step of the build, so remember to make any required changes to config.in
+before building this module.
+
+
+
+  Option 1
+  --------
+  
+  For option 1, edit the file config.in and set the variables in it
+  as follows:
+  
+      BUILD_ZLIB = True
+      INCLUDE    = ./zlib
+      LIB        = ./zlib
+      OLD_ZLIB   = False
+  
+  
+  Option 2
+  --------
+  
+  For option 2, fetch a copy of the zlib source distribution from
+  http://www.zlib.org and unpack it into the Compress::Zlib source
+  directory. Assuming you have fetched zlib 1.1.4, it will create a
+  directory called zlib-1.1.4. 
+  
+  Now set the variables in the file config.in as follows (if the version
+  you have fetched isn't 1.1.4, change the INCLUDE and LIB variables
+  appropriately):
+  
+      BUILD_ZLIB = True
+      INCLUDE    = ./zlib-1.1.4
+      LIB        = ./zlib-1.1.4
+      OLD_ZLIB   = False
+  
+  
+  Option 3
+  --------
+  
+  For option 3, you need to find out where zlib is stored on your system.
+  There are two parts to this.
+
+  First, find the directory where the zlib library is stored (some common
+  names for the library are libz.a and libz.so). Set the LIB variable in
+  the config.in file to that directory.
+  
+  Secondly, find the directory where the file zlib.h is stored. Now set
+  the INCLUDE variable in the config.in file to that directory.
+  
+  Next set BUILD_ZLIB to False
+  
+  Finally, if you are running zlib 1.0.5 or older, set the OLD_ZLIB
+  variable to False. Otherwise wet it to True.
+
+  As an example, if the zlib library on your system is in /usr/local/lib,
+  zlib.h is in /usr/local/include and zlib is more recent than version
+  1.0.5, the variables in config.in should be set as follows:
+
+      BUILD_ZLIB = True
+      INCLUDE    = /usr/local/include
+      LIB        = /usr/local/lib
+      OLD_ZLIB   = False
+  
+
+
 
 TROUBLESHOOTING
 ---------------
@@ -105,6 +184,7 @@ There are two ways to fix this problem:
     2. Edit config.in and set the OLD_ZLIB variable to True.
 
 
+
 Test Harness 01version fails
 ----------------------------
 If the 01version test harness fails, and the problem isn't covered by
@@ -116,6 +196,8 @@ Run the command below to see if this is indeed the case
     make test TEST_VERBOSE=1 TEST_FILES=t/01version.t 
 
 Try removing the one you don't want to use and rebuild.   
+
+
 
 
 Solaris build fails with "language optional software package not installed"
@@ -156,11 +238,47 @@ If that doesn't work for you, it's time to make changes to the Makefile
 by hand. Good luck!
 
 
+
+
+Solaris build fails with "gcc: unrecognized option `-KPIC'"
+-----------------------------------------------------------
+
+You are running Solaris and you get an error like this when you try to
+build this Perl module
+
+    gcc: unrecognized option `-KPIC'
+
+This symptom usually means that you are using a Perl binary that has been
+built with the Sun C compiler, but you are using gcc to build this module.
+
+When Perl builds modules that need a C compiler, it will attempt to use
+the same C compiler and command line options that was used to build perl
+itself. In this case "-KPIC" is a valid option for the Sun C compiler,
+but not for gcc. The equivalent option for gcc is "-fPIC".
+
+The solution is either:
+
+    1. Build both Perl and this module with the same C compiler, either
+       by using the Sun C compiler for both or gcc for both.
+
+    2. Try generating the Makefile for this module like this perl
+
+           perl Makefile.PL CC=gcc CCCDLFLAGS=-fPIC OPTIMIZE=" " LD=gcc
+           make test
+
+       This second option seems to work when mixing a Perl binary built
+       with the Sun C compiler and this module built with gcc. Your
+       mileage may vary.
+
+
+
 HP-UX Notes
 -----------
 
 I've had a report that when building Compress::Zlib under HP-UX that it
 is necessary to have first built the zlib library with the -fpic option.
+
+
 
 Linux Notes
 -----------
@@ -181,6 +299,8 @@ for zlib. Check for an RPM that start with "zlib-devel" in your Linux
 distribution.
 
 
+
+
 Win32 Notes
 -----------
 
@@ -196,6 +316,8 @@ If you are not running Activestate Perl and you don't have access
 to a C compiler, you will not be able to build and install this module.
 
 
+
+
 Win32 & Cygwin Notes
 --------------------
 
@@ -206,6 +328,8 @@ Windows.
 
 The workaround is to install Compress::Zlib manually using the
 instructions given at the start of this file.
+
+
 
 Mac OX X Notes
 --------------
@@ -247,6 +371,10 @@ To help me help you, I need all of the following information:
     If you have successfully installed Compress::Zlib, this one-liner
     will tell you:
 
+       perl -MCompress::Zlib -e 'print qq[ver $Compress::Zlib::VERSION\n]'
+
+    If you are running windows use this
+
        perl -MCompress::Zlib -e "print qq[ver $Compress::Zlib::VERSION\n]"
 
     If you haven't installed Compress::Zlib then search Compress::Zlib.pm
@@ -259,6 +387,7 @@ To help me help you, I need all of the following information:
     will tell you:
 
       perl -MCompress::Zlib -e "print q[zlib ver ]. Compress::Zlib::ZLIB_VERSION.qq[\n]" 
+
 
     If not, look at the beginning of the file zlib.h. 
 

@@ -1,7 +1,7 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <pmqs@cpan.org>
- * Created : 29 April 2003
- * Version : 1.22
+ * Created : 28 October 2003
+ * Version : 1.30
  *
  *   Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
@@ -179,7 +179,7 @@ DispStream(s, message)
 	printf("    stream pointer is NULL\n");
     }
     else     {
-	printf("    stream           0x%p\n", s->stream);
+	printf("    stream           0x%p\n", &(s->stream));
 	printf("           zalloc    0x%p\n", s->stream.zalloc);
 	printf("           zfree     0x%p\n", s->stream.zfree);
 	printf("           opaque    0x%p\n", s->stream.opaque);
@@ -209,7 +209,7 @@ DispStream(s, message)
 	printf("           reserved  0x%lx\n", s->stream.reserved);
 	printf("    bufsize          %ld\n", s->bufsize);
 	printf("    dictionary       0x%p\n", s->dictionary);
-	printf("    dict_adler       0x%p\n", s->dict_adler);
+	printf("    dict_adler       0x%ld\n", s->dict_adler);
 	printf("\n");
 
     }

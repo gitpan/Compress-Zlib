@@ -1,6 +1,27 @@
 CHANGES
 -------
 
+  1.30 - 28 October 2003
+
+      * Bundled a sub-set of the zlib source with the module and changed
+        the default make behaviour to build with the included zlib source.
+	The previous behaviour of using a pre-built zlib library is
+	still available for those that want it.
+
+      * Added prototypes to the subs in Zlib.pm that didn't already have
+        them. Patch from Ed Avis.
+
+      * No .bak files are created by Makefile.PL any more - this keep
+        distclean much happier. Patch suggested by Ed Avis.
+        This also fixes a similar problem reported by Dr. Martin Zinser
+        on OpenVMS.
+
+      * Documentation for some of the gz functions updated.
+
+      * Format strings modified in DispStream to keep OpenVMS happy. 
+        Problem reported by Dr. Martin Zinser.
+
+
   1.22 - 17 June 2003
 
       * Makefile.PL now displays a warning about not installing

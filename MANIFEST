@@ -1,6 +1,6 @@
 ANNOUNCE
 MANIFEST
-Makefile.NT
+Makefile.zlib
 Makefile.PL
 README
 Changes
@@ -21,4 +21,28 @@ t/04encoding.t
 t/05gzsetp.t
 t/06gzdopen.t
 typemap
-META.yml                                Module meta-data in YAML
+zlib/adler32.c
+zlib/compress.c
+zlib/crc32.c
+zlib/deflate.c
+zlib/deflate.h
+zlib/gzio.c
+zlib/infblock.c
+zlib/infblock.h
+zlib/infcodes.c
+zlib/infcodes.h
+zlib/inffast.c
+zlib/inffast.h
+zlib/inffixed.h
+zlib/inflate.c
+zlib/inftrees.c
+zlib/inftrees.h
+zlib/infutil.c
+zlib/infutil.h
+zlib/trees.c
+zlib/trees.h
+zlib/uncompr.c
+zlib/zconf.h
+zlib/zlib.h
+zlib/zutil.c
+zlib/zutil.h

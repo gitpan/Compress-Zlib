@@ -151,7 +151,7 @@ else {
 
 sub MY::postamble 
 {
-    my $postamble = '
+    my $postamble = <<'EOM';
 
 Downgrade:
 	@echo Downgrading.
@@ -159,10 +159,10 @@ Downgrade:
 
 MyDoubleCheck:	
 	@echo Checking config.in is setup for a release
-	@(grep "^LIB.*/usr/local/lib" config.in && 		\
-	grep "^INCLUDE.*/usr/local/include" config.in &&	\
-	grep "^OLD_ZLIB = False" config.in &&	\
-	grep "^BUILD_ZLIB.*False" config.in) >/dev/null ||		\
+	@(grep '^LIB *= *./zlib' config.in &&			\
+	  grep '^INCLUDE *= *./zlib' config.in &&		\
+	  grep '^OLD_ZLIB *= *False' config.in &&		\
+	  grep '^BUILD_ZLIB *= *True' config.in) >/dev/null ||	\
 	(echo config.in needs fixing ; exit 1)
 	@echo config.in is ok
 
@@ -177,7 +177,7 @@ MyTrebleCheck:
 Zlib.xs:	typemap
 	@$(TOUCH) Zlib.xs
 
-' ;
+EOM
 
     if ($BUILD_ZLIB) {
         my $CD_ZLIB_LIB = $ZLIB_LIB;
@@ -287,12 +287,12 @@ sub ParseCONFIG
 	   unless -e "$ZLIB_LIB/zlib.h" ;
 
 
-	# check Makefile.NT has been copied to ZLIB_LIB
-	if (! -e "$ZLIB_LIB/Makefile.PL") {
-	    copy 'Makefile.NT', "$ZLIB_LIB/Makefile.PL" ||
-	       die "Could not copy Makefile.NT to $ZLIB_LIB/Makefile.PL: $!\n" ;
+	# check Makefile.zlib has been copied to ZLIB_LIB
+	#if (! -e "$ZLIB_LIB/Makefile.PL") {
+	    copy 'Makefile.zlib', "$ZLIB_LIB/Makefile.PL" ||
+	       die "Could not copy Makefile.zlib to $ZLIB_LIB/Makefile.PL: $!\n" ;
 	    print "Created a Makefile.PL for zlib\n" ;
-	}
+	    #}
 	
 	# write the Makefile
 	print "Building Zlib enabled\n" ;
@@ -384,7 +384,7 @@ sub doUpDown
     my $our_sub = shift;
     my $warn_sub = shift;
 
-    local ($^I) = ".bak" ;
+    local ($^I) = "" ;
     local (@ARGV) = shift;
 
     while (<>)
