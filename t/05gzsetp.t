@@ -8,12 +8,20 @@ use Compress::Zlib ;
 BEGIN
 {
  
-    my $ver = Compress::Zlib::zlib_version;
-    my ($maj,$min,$pat) = $ver =~ /^(\d+)\.(\d+)\.(\d+)$/;
-    my $sum = $maj * 1000000 + $min * 1000 + $pat ;
- 
-    if ($sum < 1_000_006) {
-        print "1..0 #  Skip: gzsetparams needs zlib 1.0.6 or better\n";
+    my $ver = Compress::Zlib::zlib_version();
+    print "ver $ver\n";
+    if (defined $ver && $ver =~ /^(\d+)\.(\d+)\.(\d+)/ )
+    {
+        my $sum = $1 * 1000000 + $2 * 1000 + $3 ;
+     
+        if ($sum < 1_000_006) {
+            print "1..0 #  Skip: gzsetparams needs zlib 1.0.6 or better. You have $ver\n";
+            exit 0;
+        }
+    }
+    else
+    {
+        print "1..0 #  Skip: gzsetparams needs zlib 1.0.6 or better.\n";
         exit 0;
     }
 }

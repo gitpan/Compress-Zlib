@@ -1,8 +1,8 @@
                                  Compress::Zlib
 
-                                  Version 1.20
+                                  Version 1.21
 
-                                  4 April 2003
+                                  28 April 2003
 
              Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
             This program is free software; you can redistribute it and/or
@@ -167,6 +167,24 @@ Windows.
 
 The workaround is to install Compress::Zlib manually using the
 instructions given at the start of this file.
+
+Mac OX X Notes
+--------------
+
+Some versions of Mac OS X are failing a number of the tests in the
+06gzdopen.t test harness.
+
+The functionality being exercised in these tests is checking that it is
+possible to call gzopen with an existing Perl filenhandle instead of
+a filename. For some reason it does not seem possible to extract a
+numeric file descriptor (using fileno) from a FILE* and then make use
+of it.
+
+If you happen to now how to fix for this, I would like to hear from you.
+
+In the meantime, a workaround that has been reported to me is to use fink,
+available at http://fink.sourceforge.net
+
 
 
 FEEDBACK

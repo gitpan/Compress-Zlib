@@ -1,6 +1,12 @@
 CHANGES
 -------
 
+  1.21 - 28 April 2003
+
+      * Tests 148 & 150 from t/02zlib.t were failing on redhat 9. 
+
+      * Added a few words about the problems with Mac OS X to the README file. 
+
   1.20 - 4 April 2003
 
       * Fixed bug in gzopen where $gzerrno wasn't being set correctly.

@@ -38,7 +38,7 @@ EOM
 my $len   = length $hello ;
 
 
-print "1..237\n" ;
+print "1..215\n" ;
 
 # Check zlib_version and ZLIB_VERSION are the same.
 ok(1, Compress::Zlib::zlib_version eq ZLIB_VERSION) ;
@@ -246,91 +246,6 @@ unlink $name ;
 
 # change $/ <<TODO
 
-# gzip - filehandle tests
-# ========================
-
-{
-  use IO::File ;
-  my $filename = "fh.gz" ;
-  my $hello = "hello, hello, I'm back again" ;
-  my $len = length $hello ;
-
-  my $f = new IO::File ">$filename" ;
-  binmode $f ; # for OS/2
-
-  ok(66, $f) ;
-
-  my $line_one =  "first line\n" ;
-  print $f $line_one;
-  
-  ok(67, $fil = gzopen($f, "wb")) ;
- 
-  ok(68, $fil->gzwrite($hello) == $len) ;
- 
-  ok(69, ! $fil->gzclose ) ;
-
- 
-  ok(70, my $g = new IO::File "<$filename") ;
-  binmode $g ; # for OS/2
- 
-  my $first ;
-  my $ret = read($g, $first, length($line_one));
-  ok(71, $ret == length($line_one));
-
-  ok(72, $first eq $line_one) ;
-
-  ok(73, $fil = gzopen($g, "rb") ) ;
-  my $uncomp;
-  ok(74, ($x = $fil->gzread($uncomp)) == $len) ;
- 
-  ok(75, ! $fil->gzclose ) ;
- 
-  unlink $filename ;
- 
-  ok(76, $hello eq $uncomp) ;
-
-}
-
-{
-  my $filename = "fh.gz" ;
-  my $hello = "hello, hello, I'm back again" ;
-  my $len = length $hello ;
-  my $uncomp;
-  local (*FH1) ;
-  local (*FH2) ;
- 
-  ok(77, open FH1, ">$filename") ;
-  binmode FH1; # for OS/2
- 
-  my $line_one =  "first line\n" ;
-  print FH1 $line_one;
- 
-  ok(78, $fil = gzopen(\*FH1, "wb")) ;
- 
-  ok(79, $fil->gzwrite($hello) == $len) ;
- 
-  ok(80, ! $fil->gzclose ) ;
- 
- 
-  ok(81, my $g = open FH2, "<$filename") ;
-  binmode FH2; # for OS/2
- 
-  my $first ;
-  my $ret = read(FH2, $first, length($line_one));
-  ok(82, $ret == length($line_one));
- 
-  ok(83, $first eq $line_one) ;
- 
-  ok(84, $fil = gzopen(*FH2, "rb") ) ;
-  ok(85, ($x = $fil->gzread($uncomp)) == $len) ;
- 
-  ok(86, ! $fil->gzclose ) ;
- 
-  unlink $filename ;
- 
-  ok(87, $hello eq $uncomp) ;
- 
-}
 
 
 # compress/uncompress tests
@@ -340,60 +255,60 @@ $hello = "hello mum" ;
 my $keep_hello = $hello ;
 
 my $compr = compress($hello) ;
-ok(88, $compr ne "") ;
+ok(66, $compr ne "") ;
 
 my $keep_compr = $compr ;
 
 my $uncompr = uncompress ($compr) ;
 
-ok(89, $hello eq $uncompr) ;
+ok(67, $hello eq $uncompr) ;
 
-ok(90, $hello eq $keep_hello) ;
-ok(91, $compr eq $keep_compr) ;
+ok(68, $hello eq $keep_hello) ;
+ok(69, $compr eq $keep_compr) ;
 
 # compress a number
 $hello = 7890 ;
 $keep_hello = $hello ;
 
 $compr = compress($hello) ;
-ok(92, $compr ne "") ;
+ok(70, $compr ne "") ;
 
 $keep_compr = $compr ;
 
 $uncompr = uncompress ($compr) ;
 
-ok(93, $hello eq $uncompr) ;
+ok(71, $hello eq $uncompr) ;
 
-ok(94, $hello eq $keep_hello) ;
-ok(95, $compr eq $keep_compr) ;
+ok(72, $hello eq $keep_hello) ;
+ok(73, $compr eq $keep_compr) ;
 
 # bigger compress
 
 $compr = compress ($contents) ;
-ok(96, $compr ne "") ;
+ok(74, $compr ne "") ;
 
 $uncompr = uncompress ($compr) ;
 
-ok(97, $contents eq $uncompr) ;
+ok(75, $contents eq $uncompr) ;
 
 # buffer reference
 
 $compr = compress(\$hello) ;
-ok(98, $compr ne "") ;
+ok(76, $compr ne "") ;
 
 
 $uncompr = uncompress (\$compr) ;
-ok(99, $hello eq $uncompr) ;
+ok(77, $hello eq $uncompr) ;
 
 # bad level
 $compr = compress($hello, 1000) ;
-ok(100, ! defined $compr);
+ok(78, ! defined $compr);
 
 # change level
 $compr = compress($hello, Z_BEST_COMPRESSION) ;
-ok(101, defined $compr);
+ok(79, defined $compr);
 $uncompr = uncompress (\$compr) ;
-ok(102, $hello eq $uncompr) ;
+ok(80, $hello eq $uncompr) ;
 
 # deflate/inflate - small buffer
 # ==============================
@@ -402,9 +317,9 @@ $hello = "I am a HAL 9000 computer" ;
 my @hello = split('', $hello) ;
 my ($err, $X, $status);
  
-ok(103,  ($x, $err) = deflateInit( {-Bufsize => 1} ) ) ;
-ok(104, $x) ;
-ok(105, $err == Z_OK) ;
+ok(81,  ($x, $err) = deflateInit( {-Bufsize => 1} ) ) ;
+ok(82, $x) ;
+ok(83, $err == Z_OK) ;
  
 my $Answer = '';
 foreach (@hello)
@@ -415,18 +330,18 @@ foreach (@hello)
     $Answer .= $X ;
 }
  
-ok(106, $status == Z_OK) ;
+ok(84, $status == Z_OK) ;
 
-ok(107,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
+ok(85,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
 $Answer .= $X ;
  
  
 my @Answer = split('', $Answer) ;
  
 my $k;
-ok(108, ($k, $err) = inflateInit( {-Bufsize => 1}) ) ;
-ok(109, $k) ;
-ok(110, $err == Z_OK) ;
+ok(86, ($k, $err) = inflateInit( {-Bufsize => 1}) ) ;
+ok(87, $k) ;
+ok(88, $err == Z_OK) ;
  
 my $GOT = '';
 my $Z;
@@ -438,8 +353,8 @@ foreach (@Answer)
  
 }
  
-ok(111, $status == Z_STREAM_END) ;
-ok(112, $GOT eq $hello ) ;
+ok(89, $status == Z_STREAM_END) ;
+ok(90, $GOT eq $hello ) ;
 
 
 # deflate/inflate - small buffer with a number
@@ -447,9 +362,9 @@ ok(112, $GOT eq $hello ) ;
 
 $hello = 6529 ;
  
-ok(113,  ($x, $err) = deflateInit( {-Bufsize => 1} ) ) ;
-ok(114, $x) ;
-ok(115, $err == Z_OK) ;
+ok(91,  ($x, $err) = deflateInit( {-Bufsize => 1} ) ) ;
+ok(92, $x) ;
+ok(93, $err == Z_OK) ;
  
 $Answer = '';
 {
@@ -458,17 +373,17 @@ $Answer = '';
     $Answer .= $X ;
 }
  
-ok(116, $status == Z_OK) ;
+ok(94, $status == Z_OK) ;
 
-ok(117,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
+ok(95,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
 $Answer .= $X ;
  
  
 @Answer = split('', $Answer) ;
  
-ok(118, ($k, $err) = inflateInit( {-Bufsize => 1}) ) ;
-ok(119, $k) ;
-ok(120, $err == Z_OK) ;
+ok(96, ($k, $err) = inflateInit( {-Bufsize => 1}) ) ;
+ok(97, $k) ;
+ok(98, $err == Z_OK) ;
  
 $GOT = '';
 foreach (@Answer)
@@ -479,8 +394,8 @@ foreach (@Answer)
  
 }
  
-ok(121, $status == Z_STREAM_END) ;
-ok(122, $GOT eq $hello ) ;
+ok(99, $status == Z_STREAM_END) ;
+ok(100, $GOT eq $hello ) ;
 
 
  
@@ -488,47 +403,47 @@ ok(122, $GOT eq $hello ) ;
 # ==============================
 
 
-ok(123, $x = deflateInit() ) ;
+ok(101, $x = deflateInit() ) ;
  
-ok(124, (($X, $status) = $x->deflate($contents))[1] == Z_OK) ;
+ok(102, (($X, $status) = $x->deflate($contents))[1] == Z_OK) ;
 
 my $Y = $X ;
  
  
-ok(125, (($X, $status) = $x->flush() )[1] == Z_OK ) ;
+ok(103, (($X, $status) = $x->flush() )[1] == Z_OK ) ;
 $Y .= $X ;
  
  
  
-ok(126, $k = inflateInit() ) ;
+ok(104, $k = inflateInit() ) ;
  
 ($Z, $status) = $k->inflate($Y) ;
  
-ok(127, $status == Z_STREAM_END) ;
-ok(128, $contents eq $Z ) ;
+ok(105, $status == Z_STREAM_END) ;
+ok(106, $contents eq $Z ) ;
 
 # deflate/inflate - preset dictionary
 # ===================================
 
 my $dictionary = "hello" ;
-ok(129, $x = deflateInit({-Level => Z_BEST_COMPRESSION,
+ok(107, $x = deflateInit({-Level => Z_BEST_COMPRESSION,
 			 -Dictionary => $dictionary})) ;
  
 my $dictID = $x->dict_adler() ;
 
 ($X, $status) = $x->deflate($hello) ;
-ok(130, $status == Z_OK) ;
+ok(108, $status == Z_OK) ;
 ($Y, $status) = $x->flush() ;
-ok(131, $status == Z_OK) ;
+ok(109, $status == Z_OK) ;
 $X .= $Y ;
 $x = 0 ;
  
-ok(132, $k = inflateInit(-Dictionary => $dictionary) ) ;
+ok(110, $k = inflateInit(-Dictionary => $dictionary) ) ;
  
 ($Z, $status) = $k->inflate($X);
-ok(133, $status == Z_STREAM_END) ;
-ok(134, $k->dict_adler() == $dictID);
-ok(135, $hello eq $Z ) ;
+ok(111, $status == Z_STREAM_END) ;
+ok(112, $k->dict_adler() == $dictID);
+ok(113, $hello eq $Z ) ;
 
 ##ok(76, $k->inflateSetDictionary($dictionary) == Z_OK);
 # 
@@ -553,28 +468,28 @@ ok(135, $hello eq $Z ) ;
 # ===================================================
  
 {
-    ok(136, $x = deflateInit(-Level => Z_BEST_COMPRESSION )) ;
+    ok(114, $x = deflateInit(-Level => Z_BEST_COMPRESSION )) ;
  
     ($X, $status) = $x->deflate($hello) ;
-    ok(137, $status == Z_OK) ;
+    ok(115, $status == Z_OK) ;
     ($Y, $status) = $x->flush() ;
-    ok(138, $status == Z_OK) ;
+    ok(116, $status == Z_OK) ;
     $X .= $Y ;
     $x = 0 ;
  
-    ok(139, $k = inflateInit() ) ;
+    ok(117, $k = inflateInit() ) ;
  
     my $first = substr($X, 0, 2) ;
     my $last  = substr($X, 2) ;
     ($Z, $status) = $k->inflate($first);
-    ok(140, $status == Z_OK) ;
-    ok(141, $first eq "") ;
+    ok(118, $status == Z_OK) ;
+    ok(119, $first eq "") ;
 
     $last .= "appendage" ;
     my ($T, $status) = $k->inflate($last);
-    ok(142, $status == Z_STREAM_END) ;
-    ok(143, $hello eq $Z . $T ) ;
-    ok(144, $last eq "appendage") ;
+    ok(120, $status == Z_STREAM_END) ;
+    ok(121, $hello eq $Z . $T ) ;
+    ok(122, $last eq "appendage") ;
 
 }
 
@@ -593,66 +508,66 @@ EOM
 
     # create an in-memory gzip file
     my $dest = Compress::Zlib::memGzip($buffer) ;
-    ok(145, length $dest) ;
+    ok(123, length $dest) ;
 
     # write it to disk
-    ok(146, open(FH, ">$name")) ;
-    #binmode(FH);
-    print FH $dest ;
-    close FH ;
-
-    # uncompress with gzopen
-    ok(147, my $fil = gzopen($name, "rb") ) ;
- 
-    ok(148, ($x = $fil->gzread($uncomp)) == $len) ;
- 
-    ok(149, ! $fil->gzclose ) ;
-
-    ok(150, $uncomp eq $buffer) ;
- 
-    unlink $name ;
-
-    # now check that memGunzip can deal with it.
-    my $ungzip = Compress::Zlib::memGunzip($dest) ;
-    ok(151, defined $ungzip) ;
-    ok(152, $buffer eq $ungzip) ;
- 
-    # now do the same but use a reference 
-
-    $dest = Compress::Zlib::memGzip(\$buffer) ; 
-    ok(153, length $dest) ;
-
-    # write it to disk
-    ok(154, open(FH, ">$name")) ;
+    ok(124, open(FH, ">$name")) ;
     binmode(FH);
     print FH $dest ;
     close FH ;
 
     # uncompress with gzopen
-    ok(155, $fil = gzopen($name, "rb") ) ;
+    ok(125, my $fil = gzopen($name, "rb") ) ;
  
-    ok(156, ($x = $fil->gzread($uncomp)) == $len) ;
+    ok(126, ($x = $fil->gzread($uncomp)) == $len) ;
  
-    ok(157, ! $fil->gzclose ) ;
+    ok(127, ! $fil->gzclose ) ;
 
-    ok(158, $uncomp eq $buffer) ;
+    ok(128, $uncomp eq $buffer) ;
+ 
+    unlink $name ;
+
+    # now check that memGunzip can deal with it.
+    my $ungzip = Compress::Zlib::memGunzip($dest) ;
+    ok(129, defined $ungzip) ;
+    ok(130, $buffer eq $ungzip) ;
+ 
+    # now do the same but use a reference 
+
+    $dest = Compress::Zlib::memGzip(\$buffer) ; 
+    ok(131, length $dest) ;
+
+    # write it to disk
+    ok(132, open(FH, ">$name")) ;
+    binmode(FH);
+    print FH $dest ;
+    close FH ;
+
+    # uncompress with gzopen
+    ok(133, $fil = gzopen($name, "rb") ) ;
+ 
+    ok(134, ($x = $fil->gzread($uncomp)) == $len) ;
+ 
+    ok(135, ! $fil->gzclose ) ;
+
+    ok(136, $uncomp eq $buffer) ;
  
     # now check that memGunzip can deal with it.
     $ungzip = Compress::Zlib::memGunzip(\$dest) ;
-    ok(159, defined $ungzip) ;
-    ok(160, $buffer eq $ungzip) ;
+    ok(137, defined $ungzip) ;
+    ok(138, $buffer eq $ungzip) ;
  
     unlink $name ;
 
     # check corrupt header -- too short
     $dest = "x" ;
     my $result = Compress::Zlib::memGunzip($dest) ;
-    ok(161, !defined $result) ;
+    ok(139, !defined $result) ;
 
     # check corrupt header -- full of junk
     $dest = "x" x 200 ;
     $result = Compress::Zlib::memGunzip($dest) ;
-    ok(162, !defined $result) ;
+    ok(140, !defined $result) ;
 }
 
 # memGunzip with a gzopen created file
@@ -664,17 +579,17 @@ text
 
 EOM
 
-    ok(163, $fil = gzopen($name, "wb")) ;
+    ok(141, $fil = gzopen($name, "wb")) ;
 
-    ok(164, $fil->gzwrite($buffer) == length $buffer) ;
+    ok(142, $fil->gzwrite($buffer) == length $buffer) ;
 
-    ok(165, ! $fil->gzclose ) ;
+    ok(143, ! $fil->gzclose ) ;
 
     my $compr = readFile($name);
-    ok(166, length $compr) ;
+    ok(144, length $compr) ;
     my $unc = Compress::Zlib::memGunzip($compr) ;
-    ok(167, defined $unc) ;
-    ok(168, $buffer eq $unc) ;
+    ok(145, defined $unc) ;
+    ok(146, $buffer eq $unc) ;
     unlink $name ;
 }
 
@@ -686,9 +601,9 @@ EOM
     $hello = "Test test test test test";
     @hello = split('', $hello) ;
      
-    ok(169,  ($x, $err) = deflateInit( -Bufsize => 1, -WindowBits => -MAX_WBITS() ) ) ;
-    ok(170, $x) ;
-    ok(171, $err == Z_OK) ;
+    ok(147,  ($x, $err) = deflateInit( -Bufsize => 1, -WindowBits => -MAX_WBITS() ) ) ;
+    ok(148, $x) ;
+    ok(149, $err == Z_OK) ;
      
     $Answer = '';
     foreach (@hello)
@@ -699,9 +614,9 @@ EOM
         $Answer .= $X ;
     }
      
-    ok(172, $status == Z_OK) ;
+    ok(150, $status == Z_OK) ;
     
-    ok(173,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
+    ok(151,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
     $Answer .= $X ;
      
      
@@ -710,9 +625,9 @@ EOM
     # Z_STREAM_END when done.  
     push @Answer, " " ; 
      
-    ok(174, ($k, $err) = inflateInit(-Bufsize => 1, -WindowBits => -MAX_WBITS()) ) ;
-    ok(175, $k) ;
-    ok(176, $err == Z_OK) ;
+    ok(152, ($k, $err) = inflateInit(-Bufsize => 1, -WindowBits => -MAX_WBITS()) ) ;
+    ok(153, $k) ;
+    ok(154, $err == Z_OK) ;
      
     $GOT = '';
     foreach (@Answer)
@@ -723,8 +638,8 @@ EOM
      
     }
      
-    ok(177, $status == Z_STREAM_END) ;
-    ok(178, $GOT eq $hello ) ;
+    ok(155, $status == Z_STREAM_END) ;
+    ok(156, $GOT eq $hello ) ;
     
 }
 
@@ -737,33 +652,33 @@ EOM
     my $goodbye = "Will I dream?" x 2010;
     my ($err, $answer, $X, $status, $Answer);
      
-    ok(179, ($x, $err) = deflateInit() ) ;
-    ok(180, $x) ;
-    ok(181, $err == Z_OK) ;
+    ok(157, ($x, $err) = deflateInit() ) ;
+    ok(158, $x) ;
+    ok(159, $err == Z_OK) ;
      
     ($Answer, $status) = $x->deflate($hello) ;
-    ok(182, $status == Z_OK) ;
+    ok(160, $status == Z_OK) ;
     
     # create a flush point
-    ok(183, (($X, $status) = $x->flush(Z_FULL_FLUSH))[1] == Z_OK ) ;
+    ok(161, (($X, $status) = $x->flush(Z_FULL_FLUSH))[1] == Z_OK ) ;
     $Answer .= $X ;
      
     ($X, $status) = $x->deflate($goodbye) ;
-    ok(184, $status == Z_OK) ;
+    ok(162, $status == Z_OK) ;
     $Answer .= $X ;
     
-    ok(185, (($X, $status) = $x->flush())[1] == Z_OK ) ;
+    ok(163, (($X, $status) = $x->flush())[1] == Z_OK ) ;
     $Answer .= $X ;
      
     my ($first, @Answer) = split('', $Answer) ;
      
     my $k;
-    ok(186, ($k, $err) = inflateInit()) ;
-    ok(187, $k) ;
-    ok(188, $err == Z_OK) ;
+    ok(164, ($k, $err) = inflateInit()) ;
+    ok(165, $k) ;
+    ok(166, $err == Z_OK) ;
      
     ($Z, $status) = $k->inflate($first) ;
-    ok(189, $status == Z_OK) ;
+    ok(167, $status == Z_OK) ;
 
     # skip to the first flush point.
     while (@Answer)
@@ -774,7 +689,7 @@ EOM
      
     }
 
-    ok(190, $status == Z_OK);
+    ok(168, $status == Z_OK);
      
     my $GOT = '';
     my $Z = '';
@@ -789,8 +704,8 @@ EOM
     }
      
     # zlib 1.0.9 returns Z_STREAM_END here, all others return Z_DATA_ERROR
-    ok(191, $status == Z_DATA_ERROR || $status == Z_STREAM_END) ;
-    ok(192, $GOT eq $goodbye ) ;
+    ok(169, $status == Z_DATA_ERROR || $status == Z_STREAM_END) ;
+    ok(170, $GOT eq $goodbye ) ;
 
 
     # Check inflateSync leaves good data in buffer
@@ -798,20 +713,20 @@ EOM
     my ($initial, $rest) = ($1, $2);
 
     
-    ok(193, ($k, $err) = inflateInit()) ;
-    ok(194, $k) ;
-    ok(195, $err == Z_OK) ;
+    ok(171, ($k, $err) = inflateInit()) ;
+    ok(172, $k) ;
+    ok(173, $err == Z_OK) ;
      
     ($Z, $status) = $k->inflate($initial) ;
-    ok(196, $status == Z_OK) ;
+    ok(174, $status == Z_OK) ;
 
     $status = $k->inflateSync($rest) ;
-    ok(197, $status == Z_OK);
+    ok(175, $status == Z_OK);
      
     ($GOT, $status) = $k->inflate($rest) ;
      
-    ok(198, $status == Z_DATA_ERROR) ;
-    ok(199, $Z . $GOT eq $goodbye ) ;
+    ok(176, $status == Z_DATA_ERROR) ;
+    ok(177, $Z . $GOT eq $goodbye ) ;
 }
 
 {
@@ -821,112 +736,112 @@ EOM
     my $goodbye = "Will I dream?" x 2010;
     my ($input, $err, $answer, $X, $status, $Answer);
      
-    ok(200, ($x, $err) = deflateInit(-Level    => Z_BEST_COMPRESSION,
+    ok(178, ($x, $err) = deflateInit(-Level    => Z_BEST_COMPRESSION,
                                      -Strategy => Z_DEFAULT_STRATEGY) ) ;
-    ok(201, $x) ;
-    ok(202, $err == Z_OK) ;
+    ok(179, $x) ;
+    ok(180, $err == Z_OK) ;
 
-    ok(203, $x->get_Level()    == Z_BEST_COMPRESSION);
-    ok(204, $x->get_Strategy() == Z_DEFAULT_STRATEGY);
+    ok(181, $x->get_Level()    == Z_BEST_COMPRESSION);
+    ok(182, $x->get_Strategy() == Z_DEFAULT_STRATEGY);
      
     ($Answer, $status) = $x->deflate($hello) ;
-    ok(205, $status == Z_OK) ;
+    ok(183, $status == Z_OK) ;
     $input .= $hello;
     
     # error cases
     eval { $x->deflateParams() };
-    ok(206, $@ =~ m#^deflateParams needs Level and/or Strategy#);
+    ok(184, $@ =~ m#^deflateParams needs Level and/or Strategy#);
 
     eval { $x->deflateParams(-Joe => 3) };
-    ok(207, $@ =~ /^unknown key value\(s\) Joe at/);
+    ok(185, $@ =~ /^unknown key value\(s\) Joe at/);
 
-    ok(208, $x->get_Level()    == Z_BEST_COMPRESSION);
-    ok(209, $x->get_Strategy() == Z_DEFAULT_STRATEGY);
+    ok(186, $x->get_Level()    == Z_BEST_COMPRESSION);
+    ok(187, $x->get_Strategy() == Z_DEFAULT_STRATEGY);
      
     # change both Level & Strategy
     $status = $x->deflateParams(-Level => Z_BEST_SPEED, -Strategy => Z_HUFFMAN_ONLY) ;
-    ok(210, $status == Z_OK) ;
+    ok(188, $status == Z_OK) ;
     
-    ok(211, $x->get_Level()    == Z_BEST_SPEED);
-    ok(212, $x->get_Strategy() == Z_HUFFMAN_ONLY);
+    ok(189, $x->get_Level()    == Z_BEST_SPEED);
+    ok(190, $x->get_Strategy() == Z_HUFFMAN_ONLY);
      
     ($X, $status) = $x->deflate($goodbye) ;
-    ok(213, $status == Z_OK) ;
+    ok(191, $status == Z_OK) ;
     $Answer .= $X ;
     $input .= $goodbye;
     
     # change only Level 
     $status = $x->deflateParams(-Level => Z_NO_COMPRESSION) ;
-    ok(214, $status == Z_OK) ;
+    ok(192, $status == Z_OK) ;
     
-    ok(215, $x->get_Level()    == Z_NO_COMPRESSION);
-    ok(216, $x->get_Strategy() == Z_HUFFMAN_ONLY);
+    ok(193, $x->get_Level()    == Z_NO_COMPRESSION);
+    ok(194, $x->get_Strategy() == Z_HUFFMAN_ONLY);
      
     ($X, $status) = $x->deflate($goodbye) ;
-    ok(217, $status == Z_OK) ;
+    ok(195, $status == Z_OK) ;
     $Answer .= $X ;
     $input .= $goodbye;
     
     # change only Strategy
     $status = $x->deflateParams(-Strategy => Z_FILTERED) ;
-    ok(218, $status == Z_OK) ;
+    ok(196, $status == Z_OK) ;
     
-    ok(219, $x->get_Level()    == Z_NO_COMPRESSION);
-    ok(220, $x->get_Strategy() == Z_FILTERED);
+    ok(197, $x->get_Level()    == Z_NO_COMPRESSION);
+    ok(198, $x->get_Strategy() == Z_FILTERED);
      
     ($X, $status) = $x->deflate($goodbye) ;
-    ok(221, $status == Z_OK) ;
+    ok(199, $status == Z_OK) ;
     $Answer .= $X ;
     $input .= $goodbye;
     
-    ok(222, (($X, $status) = $x->flush())[1] == Z_OK ) ;
+    ok(200, (($X, $status) = $x->flush())[1] == Z_OK ) ;
     $Answer .= $X ;
      
     my ($first, @Answer) = split('', $Answer) ;
      
     my $k;
-    ok(223, ($k, $err) = inflateInit()) ;
-    ok(224, $k) ;
-    ok(225, $err == Z_OK) ;
+    ok(201, ($k, $err) = inflateInit()) ;
+    ok(202, $k) ;
+    ok(203, $err == Z_OK) ;
      
     ($Z, $status) = $k->inflate($Answer) ;
 
-    ok(226, $status == Z_STREAM_END) ;
-    ok(227, $Z  eq $input ) ;
+    ok(204, $status == Z_STREAM_END) ;
+    ok(205, $Z  eq $input ) ;
 }
 
 {
     # error cases
 
     eval { deflateInit(-Level) };
-    ok(228, $@ =~ /^Compress::Zlib::deflateInit: parameter is not a reference to a hash at/);
+    ok(206, $@ =~ /^Compress::Zlib::deflateInit: parameter is not a reference to a hash at/);
 
     eval { inflateInit(-Level) };
-    ok(229, $@ =~ /^Compress::Zlib::inflateInit: parameter is not a reference to a hash at/);
+    ok(207, $@ =~ /^Compress::Zlib::inflateInit: parameter is not a reference to a hash at/);
 
     eval { deflateInit(-Joe => 1) };
-    ok(230, $@ =~ /^unknown key value\(s\) Joe at/);
+    ok(208, $@ =~ /^unknown key value\(s\) Joe at/);
 
     eval { inflateInit(-Joe => 1) };
-    ok(231, $@ =~ /^unknown key value\(s\) Joe at/);
+    ok(209, $@ =~ /^unknown key value\(s\) Joe at/);
 
     eval { deflateInit(-Bufsize => 0) };
-    ok(232, $@ =~ /^.*?: Bufsize must be >= 1, you specified 0 at/);
+    ok(210, $@ =~ /^.*?: Bufsize must be >= 1, you specified 0 at/);
 
     eval { inflateInit(-Bufsize => 0) };
-    ok(233, $@ =~ /^.*?: Bufsize must be >= 1, you specified 0 at/);
+    ok(211, $@ =~ /^.*?: Bufsize must be >= 1, you specified 0 at/);
 
     eval { deflateInit(-Bufsize => -1) };
-    ok(234, $@ =~ /^.*?: Bufsize must be >= 1, you specified -1 at/);
+    ok(212, $@ =~ /^.*?: Bufsize must be >= 1, you specified -1 at/);
 
     eval { inflateInit(-Bufsize => -1) };
-    ok(235, $@ =~ /^.*?: Bufsize must be >= 1, you specified -1 at/);
+    ok(213, $@ =~ /^.*?: Bufsize must be >= 1, you specified -1 at/);
 
     eval { deflateInit(-Bufsize => "xxx") };
-    ok(236, $@ =~ /^.*?: Bufsize must be >= 1, you specified xxx at/);
+    ok(214, $@ =~ /^.*?: Bufsize must be >= 1, you specified xxx at/);
 
     eval { inflateInit(-Bufsize => "xxx") };
-    ok(237, $@ =~ /^.*?: Bufsize must be >= 1, you specified xxx at/);
+    ok(215, $@ =~ /^.*?: Bufsize must be >= 1, you specified xxx at/);
 
 }
 
