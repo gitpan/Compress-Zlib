@@ -1,7 +1,7 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <pmqs@cpan.org>
- * Created : 28 April 2003
- * Version : 1.21
+ * Created : 29 April 2003
+ * Version : 1.22
  *
  *   Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
@@ -427,7 +427,6 @@ Zip_gzread(file, buf, len=4096)
 	/* any left over from gzreadline ? */
 	if ((bufsize = SvCUR(file->buffer)) > 0) {
 	    uLong movesize ;
-	    RETVAL = bufsize ;
 	
 	    if (bufsize < len) {
 		movesize = bufsize ;
@@ -437,6 +436,7 @@ Zip_gzread(file, buf, len=4096)
 	        movesize = len ;
 	        len = 0 ;
 	    }
+	    RETVAL = movesize ;
 
        	    sv_catpvn(buf, SvPVX(file->buffer) + file->offset, movesize);
 

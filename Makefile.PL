@@ -10,6 +10,40 @@ my $ZLIB_INCLUDE ;
 my $BUILD_ZLIB = 0 ;
 my $OLD_ZLIB = '' ;
 
+# Check if installing on CYGWIN
+if ($^O =~ /cygwin/i)
+{
+    print <<EOM ;
+
+I see you are running Cygwin.
+
+Please note that this module cannot be installed on Cygwin using the
+CPAN shell. The CPAN Shell uses Compress::Zlib internally and it is not
+possible to delete an active DLL.
+
+If you are running the CPAN shell, please exit it and install this module
+by hand by running 'make install' under the directory
+
+    ~/.cpan/build/Compress-Zlib-VERSION
+
+EOM
+
+    print "Do you want to continue? [Y/N]: " ;
+    my $answer = <STDIN> ;
+
+    if ($answer =~ /^yes|y/i)
+    {
+	print "continuing...\n" 
+    }
+    else
+    {
+	print "exiting...\n" ;
+	exit 1 ;
+    }
+
+
+}
+
 ParseCONFIG() ;
 
 my @files = ('Zlib.pm', glob("t/*.t"), grep(!/\.bak$/,  glob("examples/*"))) ;

@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 28 April 2003
-# Version : 1.21
+# Created : 29 April 2003
+# Version : 1.22
 #
 #     Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@ local ($^W) = 1; #use warnings ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 use vars qw($deflateDefault $deflateParamsDefault $inflateDefault);
 
-$VERSION = "1.21" ;
+$VERSION = "1.22" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -263,10 +263,10 @@ sub compress($;$)
     if ( (($x, $err) = deflateInit(Level => $level))[1] == Z_OK()) {
 
         ($output, $err) = $x->deflate($in) ;
-        return undef unless $err == Z_OK() ;
+	return undef unless $err == Z_OK() ;
 
-        ($out, $err) = $x->flush() ;
-        return undef unless $err == Z_OK() ;
+	($out, $err) = $x->flush() ;
+	return undef unless $err == Z_OK() ;
     
         return ($output . $out) ;
 
@@ -418,11 +418,20 @@ sub memGunzip
     my ($output, $status) = $x->inflate($string);
     return undef 
         unless $status == Z_STREAM_END();
-    my ($crc, $len) = unpack ("VV", substr($$string, 0, 8));
-    substr($$string, 0, 8) = '';
-    return undef 
-        unless $len == length($output) and
-               $crc == crc32($output);
+
+    if (length $$string >= 8)
+    {
+        my ($crc, $len) = unpack ("VV", substr($$string, 0, 8));
+        substr($$string, 0, 8) = '';
+        return undef 
+            unless $len == length($output) and
+                   $crc == crc32($output);
+    }
+    else
+    {
+        $$string = '';
+    }
+
     return $output;   
 }
 

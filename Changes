@@ -1,6 +1,17 @@
 CHANGES
 -------
 
+  1.22 - 17 June 2003
+
+      * Makefile.PL now displays a warning about not installing
+        Compress::Zlib via the CPAN shell.
+
+      * Fix to allow intermingling of gzread & gzreadline - patch
+        supplied by Doug Perham.
+
+      * memGunzip will silently now work if the gzip trailer is
+        missing. Some HTTP Origin Servers seem to leave it out.
+
   1.21 - 28 April 2003
 
       * Tests 148 & 150 from t/02zlib.t were failing on redhat 9. 
