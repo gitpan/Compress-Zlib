@@ -72,7 +72,7 @@ EOM
 
 @hello2 = grep(s/$/\n/, split(/\n/, $hello2)) ;
 
-print "1..9\n" ;
+print "1..13\n" ;
 
 
 
@@ -94,10 +94,11 @@ A5*X*A0(0X*HH!0.NHM3$G)Q*D#*%5* : #) E6<^
 EOM
 
 # Write a test .gz file
-$^W = 0 ;
-writeFile($file1, unpack("u", $hello1_uue)) ;
-writeFile($file2, unpack("u", $hello2_uue)) ;
-$^W = 1 ;
+{
+    local $^W = 0 ;
+    writeFile($file1, unpack("u", $hello1_uue)) ;
+    writeFile($file2, unpack("u", $hello2_uue)) ;
+}
 
  
 $a = `$Perl $Inc ${examples}/gzcat $file1 $file2 2>&1` ;
@@ -139,5 +140,20 @@ $a = `$Perl $Inc ${examples}/filtinf <$file1 2>$stderr` ;
 ok(7, $? == 0) ;
 ok(8, -s $stderr == 0) ;
 ok(9, $a eq $hello1 . $hello2) ;
+
+# gzstream
+# ########
+
+{
+    writeFile($file1, $hello1) ;
+    $a = `$Perl $Inc ${examples}/gzstream <$file1 >$file2 2>$stderr` ;
+    ok(10, $? == 0) ;
+    ok(11, -s $stderr == 0) ;
+
+    my $b = `$Perl $Inc ${examples}/gzcat $file2 2>&1` ;
+    ok(12, $? == 0) ;
+    ok(13, $b eq $hello1 ) ;
+}
+
 
 unlink $file1, $file2, $stderr ;

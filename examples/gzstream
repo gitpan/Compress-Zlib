@@ -1,0 +1,13 @@
+#!/usr/local/bin/perl
+
+use Compress::Zlib ;
+
+my $gz = gzopen(\*STDOUT, "wb")
+	  or die "Cannot open stdout: $gzerrno\n" ;
+
+while (<>) {
+    $gz->gzwrite($_) 
+	or die "error writing: $gzerrno\n" ;
+}
+
+$gz->gzclose ;

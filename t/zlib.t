@@ -20,7 +20,7 @@ EOM
 
 $len   = length $hello ;
 
-print "1..76\n" ;
+print "1..96\n" ;
 
 # Check zlib_version and ZLIB_VERSION are the same.
 ok(1, Compress::Zlib::zlib_version eq ZLIB_VERSION) ;
@@ -100,6 +100,7 @@ ok(19, $fil = gzopen($name, "rb")) ;
 $aok = 1 ; 
 $remember = '';
 $line = '';
+$lines = 0 ;
 while ($fil->gzreadline($line) > 0) {
     ($aok = 0), last
 	if $line ne $text[$lines] ;
@@ -122,6 +123,7 @@ ok(26, ! $fil->gzclose ) ;
 
 # now try to read it back in
 ok(27, $fil = gzopen($name, "rb")) ;
+$i = 0 ;
 while ($fil->gzreadline($line) > 0) {
     $got[$i] = $line ;    
     ++ $i ;
@@ -186,28 +188,103 @@ unlink $name ;
 
 # change $/ <<TODO
 
+# gzip - filehandle tests
+# ========================
+
+{
+  use IO::File ;
+  my $filename = "fh.gz" ;
+  my $hello = "hello, hello, I'm back again" ;
+  my $len = length $hello ;
+
+  my $f = new IO::File ">$filename" ;
+
+  ok(50, $f) ;
+
+  print $f "first line\n" ;
+  
+  ok(51, $fil = gzopen($f, "wb")) ;
+ 
+  ok(52, $fil->gzwrite($hello) == $len) ;
+ 
+  ok(53, ! $fil->gzclose ) ;
+
+ 
+  ok(54, my $g = new IO::File "<$filename") ;
+ 
+  my $first = <$g> ;
+
+  ok(55, $first eq "first line\n") ;
+
+  ok(56, $fil = gzopen($g, "rb") ) ;
+  ok(57, ($x = $fil->gzread($uncomp)) == $len) ;
+ 
+  ok(58, ! $fil->gzclose ) ;
+ 
+  unlink $name ;
+ 
+  ok(59, $hello eq $uncomp) ;
+
+}
+
+{
+  my $filename = "fh.gz" ;
+  my $hello = "hello, hello, I'm back again" ;
+  my $len = length $hello ;
+  local (*FH1) ;
+  local (*FH2) ;
+ 
+  ok(60, open FH1, ">$filename") ;
+ 
+  print FH1 "first line\n" ;
+ 
+  ok(61, $fil = gzopen(\*FH1, "wb")) ;
+ 
+  ok(62, $fil->gzwrite($hello) == $len) ;
+ 
+  ok(63, ! $fil->gzclose ) ;
+ 
+ 
+  ok(64, my $g = open FH2, "<$filename") ;
+ 
+  my $first = <FH2> ;
+ 
+  ok(65, $first eq "first line\n") ;
+ 
+  ok(66, $fil = gzopen(*FH2, "rb") ) ;
+  ok(67, ($x = $fil->gzread($uncomp)) == $len) ;
+ 
+  ok(68, ! $fil->gzclose ) ;
+ 
+  unlink $name ;
+ 
+  ok(69, $hello eq $uncomp) ;
+ 
+}
+
+
 # compress/uncompress tests
 # =========================
 
 $hello = "hello mum" ;
 
 $compr = compress($hello) ;
-ok(50, $compr ne "") ;
+ok(70, $compr ne "") ;
 
 
 $uncompr = uncompress ($compr) ;
 
-ok(51, $hello eq $uncompr) ;
+ok(71, $hello eq $uncompr) ;
 
 
 # bigger compress
 
 $compr = compress ($contents) ;
-ok(52, $compr ne "") ;
+ok(72, $compr ne "") ;
 
 $uncompr = uncompress ($compr) ;
 
-ok(53, $contents eq $uncompr) ;
+ok(73, $contents eq $uncompr) ;
 
 
 # deflate/inflate - small buffer
@@ -216,9 +293,9 @@ ok(53, $contents eq $uncompr) ;
 $hello = "I am a HAL 9000 computer" ;
 @hello = split('', $hello) ;
  
-ok(54,  ($x, $err) = deflateInit( {Bufsize => 1} ) ) ;
-ok(55, $x) ;
-ok(56, $err == Z_OK) ;
+ok(74,  ($x, $err) = deflateInit( {-Bufsize => 1} ) ) ;
+ok(75, $x) ;
+ok(76, $err == Z_OK) ;
  
 $Answer = '';
 foreach (@hello)
@@ -229,17 +306,17 @@ foreach (@hello)
     $Answer .= $X ;
 }
  
-ok(57, $status == Z_OK) ;
+ok(77, $status == Z_OK) ;
 
-ok(58,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
+ok(78,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
 $Answer .= $X ;
  
  
 @Answer = split('', $Answer) ;
  
-ok(59, ($k, $err) = inflateInit( {Bufsize => 1}) ) ;
-ok(60, $k) ;
-ok(61, $err == Z_OK) ;
+ok(79, ($k, $err) = inflateInit( {-Bufsize => 1}) ) ;
+ok(80, $k) ;
+ok(81, $err == Z_OK) ;
  
 $GOT = '';
 foreach (@Answer)
@@ -250,8 +327,8 @@ foreach (@Answer)
  
 }
  
-ok(62, $status == Z_STREAM_END) ;
-ok(63, $GOT eq $hello ) ;
+ok(82, $status == Z_STREAM_END) ;
+ok(83, $GOT eq $hello ) ;
 
 
  
@@ -259,47 +336,47 @@ ok(63, $GOT eq $hello ) ;
 # ==============================
 
 
-ok(64, $x = deflateInit() ) ;
+ok(84, $x = deflateInit() ) ;
  
-ok(65, (($X, $status) = $x->deflate($contents))[1] == Z_OK) ;
+ok(85, (($X, $status) = $x->deflate($contents))[1] == Z_OK) ;
 
 $Y = $X ;
  
  
-ok(66, (($X, $status) = $x->flush() )[1] == Z_OK ) ;
+ok(86, (($X, $status) = $x->flush() )[1] == Z_OK ) ;
 $Y .= $X ;
  
  
  
-ok(67, $k = inflateInit() ) ;
+ok(87, $k = inflateInit() ) ;
  
 ($Z, $status) = $k->inflate($Y) ;
  
-ok(68, $status == Z_STREAM_END) ;
-ok(69, $contents eq $Z ) ;
+ok(88, $status == Z_STREAM_END) ;
+ok(89, $contents eq $Z ) ;
 
 # deflate/inflate - preset dictionary
 # ===================================
 
 $dictionary = "hello" ;
-ok(70, $x = deflateInit({Level => Z_BEST_COMPRESSION,
-			 Dictionary => $dictionary} )) ;
+ok(90, $x = deflateInit({-Level => Z_BEST_COMPRESSION,
+			 -Dictionary => $dictionary})) ;
  
 $dictID = $x->dict_adler() ;
 
 ($X, $status) = $x->deflate($hello) ;
-ok(71, $status == Z_OK) ;
+ok(91, $status == Z_OK) ;
 ($Y, $status) = $x->flush() ;
-ok(72, $status == Z_OK) ;
+ok(92, $status == Z_OK) ;
 $X .= $Y ;
 $x = 0 ;
  
-ok(73, $k = inflateInit({Dictionary => $dictionary}) ) ;
+ok(93, $k = inflateInit(-Dictionary => $dictionary) ) ;
  
 ($Z, $status) = $k->inflate($X);
-ok(74, $status == Z_STREAM_END) ;
-ok(75, $k->dict_adler() == $dictID);
-ok(76, $hello eq $Z ) ;
+ok(94, $status == Z_STREAM_END) ;
+ok(95, $k->dict_adler() == $dictID);
+ok(96, $hello eq $Z ) ;
 
 ##ok(76, $k->inflateSetDictionary($dictionary) == Z_OK);
 # 

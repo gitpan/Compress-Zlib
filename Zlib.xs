@@ -1,7 +1,7 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <pmarquess@bfsec.bt.co.uk>
  * Created : 22nd January 1996
- * Version : 0.4
+ * Version : 0.50
  *
  *   Copyright (c) 1995, 1996 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
@@ -477,7 +477,7 @@ constant(name,arg)
 
 
 Compress::Zlib::gzFile
-gzopen(path, mode)
+gzopen_(path, mode)
 	char *	path
 	char *	mode
 	CODE:
@@ -498,6 +498,29 @@ gzopen(path, mode)
 	  RETVAL
 
 
+Compress::Zlib::gzFile
+gzdopen_(fh, mode, offset)
+        int     fh
+        char *  mode
+        long    offset
+	CODE:
+        gzFile  gz ;
+        lseek(fh, offset, 0) ; 
+        gz = gzdopen(fh, mode) ;
+        SetGzErrorNo(errno ? Z_ERRNO : Z_MEM_ERROR) ;
+        if (gz) {
+            RETVAL = (gzType*)safemalloc(sizeof(gzType)) ;
+            /* RETVAL->buffer = newSVpv("", SIZE) ; */
+            RETVAL->buffer = newSV(SIZE) ;
+            SvPOK_only(RETVAL->buffer) ;
+            SvCUR_set(RETVAL->buffer, 0) ;
+            RETVAL->offset = 0 ;
+            RETVAL->gz = gz ;
+        }
+        else
+            RETVAL = NULL ;
+        OUTPUT:
+          RETVAL
 
 
 MODULE = Compress::Zlib	PACKAGE = Compress::Zlib::gzFile PREFIX = Zip_
@@ -522,7 +545,7 @@ Zip_gzread(file, buf, len=4096)
 	if ((bufsize = SvCUR(file->buffer)) > 0) {
 	    int movesize ;
 	    RETVAL = bufsize ;
-
+	
 	    if (bufsize < len) {
 		movesize = bufsize ;
 	        len -= movesize ;
@@ -605,7 +628,7 @@ DESTROY(file)
 	    SvREFCNT_dec(file->buffer) ;
 	    safefree((char*)file) ;
 
-#define Zip_gzerror(file) gzerror(file->gz, &errnum)
+#define Zip_gzerror(file) (char*)gzerror(file->gz, &errnum)
 
 char *
 Zip_gzerror(file)

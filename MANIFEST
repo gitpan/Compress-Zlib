@@ -8,6 +8,7 @@ examples/filtdef
 examples/filtinf
 examples/gzcat
 examples/gzgrep
+examples/gzstream
 t/zlib.t
 t/examples.t
 typemap
