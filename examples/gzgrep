@@ -1,14 +1,19 @@
 #!/usr/local/bin/perl
 
+use strict ;
+use warnings ;
+
 use Compress::Zlib ;
 
 die "Usage: gzgrep pattern file...\n"
     unless @ARGV >= 2;
 
-$pattern = shift ;
+my $pattern = shift ;
+
+my $file ;
 
 foreach $file (@ARGV) {
-    $gz = gzopen($file, "rb") 
+    my $gz = gzopen($file, "rb") 
          or die "Cannot open $file: $gzerrno\n" ;
 
     while ($gz->gzreadline($_) > 0) {

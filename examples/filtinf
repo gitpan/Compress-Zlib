@@ -1,14 +1,18 @@
 #!/usr/local/bin/perl
 
+use strict ;
+use warnings ;
+
 use Compress::Zlib ;
 
-$x = inflateInit()
+my $x = inflateInit()
    or die "Cannot create a inflation stream\n" ;
 
-$input = '' ;
+my $input = '' ;
 binmode STDIN;
 binmode STDOUT;
 
+my ($output, $status) ;
 while (read(STDIN, $input, 4096))
 {
     ($output, $status) = $x->inflate(\$input) ;

@@ -1,4 +1,7 @@
 
+use strict ;
+use warnings ;
+
 use Compress::Zlib ;
 
 sub ok
@@ -26,12 +29,12 @@ sub readFile
     $string ;
 }     
 
-$hello = <<EOM ;
+my $hello = <<EOM ;
 hello world
 this is a test
 EOM
 
-$len   = length $hello ;
+my $len   = length $hello ;
 
 
 print "1..166\n" ;
@@ -42,9 +45,10 @@ ok(1, Compress::Zlib::zlib_version eq ZLIB_VERSION) ;
 # gzip tests
 #===========
 
-$name = "test.gz" ;
+my $name = "test.gz" ;
+my ($x, $uncomp) ;
 
-ok(2, $fil = gzopen($name, "wb")) ;
+ok(2, my $fil = gzopen($name, "wb")) ;
 
 ok(3, $fil->gzwrite($hello) == $len) ;
 
@@ -61,8 +65,8 @@ unlink $name ;
 ok(8, $hello eq $uncomp) ;
 
 # check that a number can be gzipped
-$number = 7603 ;
-$num_len = 4 ;
+my $number = 7603 ;
+my $num_len = 4 ;
 
 ok(9, $fil = gzopen($name, "wb")) ;
 
@@ -84,13 +88,13 @@ ok(16, $number eq $uncomp) ;
 
 # now a bigger gzip test
 
-$text = 'text' ;
-$file = "$text.gz" ;
+my $text = 'text' ;
+my $file = "$text.gz" ;
 
-ok(17, $f = gzopen($file, "wb")) ;
+ok(17, my $f = gzopen($file, "wb")) ;
 
 # generate a long random string
-$contents = '' ;
+my $contents = '' ;
 foreach (1 .. 5000)
   { $contents .= chr int rand 255 }
 
@@ -102,6 +106,7 @@ ok(19, ! $f->gzclose );
 
 ok(20, $f = gzopen($file, "rb")) ;
  
+my $uncompressed ;
 ok(21, $f->gzread($uncompressed, $len) == $len) ;
 
 ok(22, $contents eq $uncompressed) ;
@@ -115,7 +120,7 @@ unlink($file) ;
 
 # first create a small gzipped text file
 $name = "test.gz" ;
-@text = (<<EOM, <<EOM, <<EOM, <<EOM) ;
+my @text = (<<EOM, <<EOM, <<EOM, <<EOM) ;
 this is line 1
 EOM
 the second line
@@ -133,10 +138,10 @@ ok(26, ! $fil->gzclose ) ;
 
 # now try to read it back in
 ok(27, $fil = gzopen($name, "rb")) ;
-$aok = 1 ; 
-$remember = '';
-$line = '';
-$lines = 0 ;
+my $aok = 1 ; 
+my $remember = '';
+my $line = '';
+my $lines = 0 ;
 while ($fil->gzreadline($line) > 0) {
     ($aok = 0), last
 	if $line ne $text[$lines] ;
@@ -150,8 +155,8 @@ ok(31, ! $fil->gzclose ) ;
 unlink($name) ;
 
 # a text file with a very long line (bigger than the internal buffer)
-$line1 = ("abcdefghijklmnopq" x 2000) . "\n" ;
-$line2 = "second line\n" ;
+my $line1 = ("abcdefghijklmnopq" x 2000) . "\n" ;
+my $line2 = "second line\n" ;
 $text = $line1 . $line2 ;
 ok(32, $fil = gzopen($name, "wb")) ;
 ok(33, $fil->gzwrite($text) == length $text) ;
@@ -159,7 +164,8 @@ ok(34, ! $fil->gzclose ) ;
 
 # now try to read it back in
 ok(35, $fil = gzopen($name, "rb")) ;
-$i = 0 ;
+my $i = 0 ;
+my @got = ();
 while ($fil->gzreadline($line) > 0) {
     $got[$i] = $line ;    
     ++ $i ;
@@ -205,7 +211,7 @@ unlink $name ;
 #	  gzreadline
 $line1 = "hello hello, I'm back again\n" ;
 $line2 = "abc" x 200 ; 
-$line3 = "def" x 200 ;
+my $line3 = "def" x 200 ;
 
 $text = $line1 . $line2 . $line3 ;
 ok(48, $fil = gzopen($name, "wb")) ;
@@ -308,14 +314,14 @@ unlink $name ;
 # =========================
 
 $hello = "hello mum" ;
-$keep_hello = $hello ;
+my $keep_hello = $hello ;
 
-$compr = compress($hello) ;
+my $compr = compress($hello) ;
 ok(79, $compr ne "") ;
 
-$keep_compr = $compr ;
+my $keep_compr = $compr ;
 
-$uncompr = uncompress ($compr) ;
+my $uncompr = uncompress ($compr) ;
 
 ok(80, $hello eq $uncompr) ;
 
@@ -360,13 +366,14 @@ ok(90, $hello eq $uncompr) ;
 # ==============================
 
 $hello = "I am a HAL 9000 computer" ;
-@hello = split('', $hello) ;
+my @hello = split('', $hello) ;
+my ($err, $X, $status);
  
 ok(91,  ($x, $err) = deflateInit( {-Bufsize => 1} ) ) ;
 ok(92, $x) ;
 ok(93, $err == Z_OK) ;
  
-$Answer = '';
+my $Answer = '';
 foreach (@hello)
 {
     ($X, $status) = $x->deflate($_) ;
@@ -381,13 +388,15 @@ ok(95,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
 $Answer .= $X ;
  
  
-@Answer = split('', $Answer) ;
+my @Answer = split('', $Answer) ;
  
+my $k;
 ok(96, ($k, $err) = inflateInit( {-Bufsize => 1}) ) ;
 ok(97, $k) ;
 ok(98, $err == Z_OK) ;
  
-$GOT = '';
+my $GOT = '';
+my $Z;
 foreach (@Answer)
 {
     ($Z, $status) = $k->inflate($_) ;
@@ -450,7 +459,7 @@ ok(111, $x = deflateInit() ) ;
  
 ok(112, (($X, $status) = $x->deflate($contents))[1] == Z_OK) ;
 
-$Y = $X ;
+my $Y = $X ;
  
  
 ok(113, (($X, $status) = $x->flush() )[1] == Z_OK ) ;
@@ -468,11 +477,11 @@ ok(116, $contents eq $Z ) ;
 # deflate/inflate - preset dictionary
 # ===================================
 
-$dictionary = "hello" ;
+my $dictionary = "hello" ;
 ok(117, $x = deflateInit({-Level => Z_BEST_COMPRESSION,
 			 -Dictionary => $dictionary})) ;
  
-$dictID = $x->dict_adler() ;
+my $dictID = $x->dict_adler() ;
 
 ($X, $status) = $x->deflate($hello) ;
 ok(118, $status == Z_OK) ;
@@ -529,7 +538,7 @@ ok(123, $hello eq $Z ) ;
     ok(129, $first eq "") ;
 
     $last .= "appendage" ;
-    ($T, $status) = $k->inflate($last);
+    my ($T, $status) = $k->inflate($last);
     ok(130, $status == Z_STREAM_END) ;
     ok(131, $hello eq $Z . $T ) ;
     ok(132, $last eq "appendage") ;

@@ -1,12 +1,16 @@
 #!/usr/local/bin/perl
 
+use strict ;
+use warnings ;
+
 use Compress::Zlib ;
 
 binmode STDIN;
 binmode STDOUT;
-$x = deflateInit()
+my $x = deflateInit()
    or die "Cannot create a deflation stream\n" ;
 
+my ($output, $status) ;
 while (<>)
 {
     ($output, $status) = $x->deflate($_) ;

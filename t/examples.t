@@ -1,6 +1,6 @@
 
-
-use vars qw($hello1_uue $hello2_uue) ;
+use strict ;
+use warnings ;
 
 sub ok
 {
@@ -39,17 +39,17 @@ sub readFile
 }
  
 
-$Inc = '' ;
+my $Inc = '' ;
 foreach (@INC)
  { $Inc .= "-I$_ " }
  
-$Perl = '' ;
+my $Perl = '' ;
 $Perl = ($ENV{'FULLPERL'} or $^X or 'perl') ;
  
 $Perl = "$Perl -w" ;
-$examples = "./examples";
+my $examples = "./examples";
 
-$hello1 = <<EOM ;
+my $hello1 = <<EOM ;
 hello
 this is 
 a test
@@ -59,9 +59,9 @@ xuuuuuu
 the end
 EOM
 
-@hello1 = grep(s/$/\n/, split(/\n/, $hello1)) ;
+my @hello1 = grep(s/$/\n/, split(/\n/, $hello1)) ;
 
-$hello2 = <<EOM;
+my $hello2 = <<EOM;
 
 Howdy
 this is the
@@ -72,7 +72,7 @@ xuuuuuu
 really the end
 EOM
 
-@hello2 = grep(s/$/\n/, split(/\n/, $hello2)) ;
+my @hello2 = grep(s/$/\n/, split(/\n/, $hello2)) ;
 
 print "1..13\n" ;
 
@@ -81,23 +81,23 @@ print "1..13\n" ;
 # gzcat
 # #####
 
-$file1 = "hello1.gz" ;
-$file2 = "hello2.gz" ;
+my $file1 = "hello1.gz" ;
+my $file2 = "hello2.gz" ;
 unlink $file1, $file2 ;
 
-$hello1_uue = <<'EOM';
+my $hello1_uue = <<'EOM';
 M'XL("(W#+3$" VAE;&QO,0#+2,W)R><JR<@L5@ BKD2%DM3B$J[<U.+BQ/14
 ;K@J%$A#@JB@% Z"Z5(74O!0N &D:".,V    
 EOM
 
-$hello2_uue = <<'EOM';
+my $hello2_uue = <<'EOM';
 M'XL("*[#+3$" VAE;&QO,@#C\L@O3ZGD*LG(+%8 HI*,5*[BU.3\O!2NM,R<
 A5*X*A0(0X*HH!0.NHM3$G)Q*D#*%5* : #) E6<^    
 EOM
 
 # Write a test .gz file
 {
-    local $^W = 0 ;
+    #local $^W = 0 ;
     writeFile($file1, unpack("u", $hello1_uue)) ;
     writeFile($file2, unpack("u", $hello2_uue)) ;
 }
@@ -129,7 +129,7 @@ unlink $file1, $file2 ;
 # ##############
 
 
-$stderr = "err.out" ;
+my $stderr = "err.out" ;
 unlink $stderr ;
 writeFile($file1, $hello1) ;
 writeFile($file2, $hello2) ;

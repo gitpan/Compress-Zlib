@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 5th February 2001
-# Version : 1.10
+# Created : 17th February 2001
+# Version : 1.11
 #
 #     Copyright (c) 1995-2001 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -18,10 +18,11 @@ use Carp ;
 use IO::Handle ;
 
 use strict ;
+use warnings ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD 
 	    $deflateDefault $deflateParamsDefault $inflateDefault) ;
 
-$VERSION = "1.10" ;
+$VERSION = "1.11" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -587,31 +588,33 @@ Returns the adler32 value for the dictionary.
 Here is a trivial example of using B<deflate>. It simply reads standard
 input, deflates it and writes it to standard output.
 
+    use strict ;
+    use warnings ;
+
     use Compress::Zlib ;
 
     binmode STDIN;
     binmode STDOUT;
-
-    $x = deflateInit()
+    my $x = deflateInit()
        or die "Cannot create a deflation stream\n" ;
 
+    my ($output, $status) ;
     while (<>)
     {
         ($output, $status) = $x->deflate($_) ;
     
         $status == Z_OK
             or die "deflation failed\n" ;
-
+    
         print $output ;
     }
-
+    
     ($output, $status) = $x->flush() ;
-
+    
     $status == Z_OK
         or die "deflation failed\n" ;
-
+    
     print $output ;
-
 
 =head1 INFLATE
 
@@ -700,25 +703,29 @@ Returns the adler32 value for the dictionary.
 
 Here is an example of using B<inflate>.
 
+    use strict ;
+    use warnings ;
+    
     use Compress::Zlib ;
-
-    $x = inflateInit()
+    
+    my $x = inflateInit()
        or die "Cannot create a inflation stream\n" ;
-
-    $input = '' ;
+    
+    my $input = '' ;
     binmode STDIN;
     binmode STDOUT;
-
+    
+    my ($output, $status) ;
     while (read(STDIN, $input, 4096))
     {
         ($output, $status) = $x->inflate(\$input) ;
-
+    
         print $output 
             if $status == Z_OK or $status == Z_STREAM_END ;
-
+    
         last if $status != Z_OK ;
     }
-
+    
     die "inflation failed\n"
         unless $status == Z_STREAM_END ;
 
@@ -853,35 +860,47 @@ be used safely.
 Here is an example script which uses the interface. It implements a
 I<gzcat> function.
 
-    use Compress::Zlib ;
-
-    die "Usage: gzcat file...\n"
-	unless @ARGV ;
-
-    foreach $file (@ARGV) {
-        $gz = gzopen($file, "rb") 
-	    or die "Cannot open $file: $gzerrno\n" ;
-
-        print $buffer 
-            while $gz->gzread($buffer) > 0 ;
-        die "Error reading from $file: $gzerrno\n" 
-            if $gzerrno != Z_STREAM_END ;
+    use strict ;
+    use warnings ;
     
+    use Compress::Zlib ;
+    
+    die "Usage: gzcat file...\n"
+        unless @ARGV ;
+    
+    my $file ;
+    
+    foreach $file (@ARGV) {
+        my $buffer ;
+    
+        my $gz = gzopen($file, "rb") 
+             or die "Cannot open $file: $gzerrno\n" ;
+    
+        print $buffer while $gz->gzread($buffer) > 0 ;
+    
+        die "Error reading from $file: $gzerrno" . ($gzerrno+0) . "\n" 
+            if $gzerrno != Z_STREAM_END ;
+        
         $gz->gzclose() ;
     }
 
 Below is a script which makes use of B<gzreadline>. It implements a
 very simple I<grep> like script.
 
+    use strict ;
+    use warnings ;
+    
     use Compress::Zlib ;
-
+    
     die "Usage: gzgrep pattern file...\n"
         unless @ARGV >= 2;
-
-    $pattern = shift ;
-
+    
+    my $pattern = shift ;
+    
+    my $file ;
+    
     foreach $file (@ARGV) {
-        $gz = gzopen($file, "rb") 
+        my $gz = gzopen($file, "rb") 
              or die "Cannot open $file: $gzerrno\n" ;
     
         while ($gz->gzreadline($_) > 0) {
@@ -890,25 +909,27 @@ very simple I<grep> like script.
     
         die "Error reading from $file: $gzerrno\n" 
             if $gzerrno != Z_STREAM_END ;
-    
+        
         $gz->gzclose() ;
     }
-
 
 This script, I<gzstream>, does the opposite of the I<gzcat> script
 above. It reads from standard input and writes a gzip file to standard
 output.
 
+    use strict ;
+    use warnings ;
+    
     use Compress::Zlib ;
-
-    binmode STDOUT; # gzopen only sets it on the fd
-
+    
+    binmode STDOUT;	# gzopen only sets it on the fd
+    
     my $gz = gzopen(\*STDOUT, "wb")
-	  or die "Cannot open stdout: $gzerrno\n" ;
-
+    	  or die "Cannot open stdout: $gzerrno\n" ;
+    
     while (<>) {
         $gz->gzwrite($_) 
-	    or die "error writing: $gzerrno\n" ;
+    	or die "error writing: $gzerrno\n" ;
     }
 
     $gz->gzclose ;

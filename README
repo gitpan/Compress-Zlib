@@ -1,6 +1,6 @@
                                  Compress::Zlib
 
-                                  Version 1.10
+                                  Version 1.11
 
                                  5th February 2001 
 
@@ -53,12 +53,20 @@ and follow the instructions given in it.
 BUILDING THE MODULE
 -------------------
 
+Assuming you have met all the prerequisites, building the module should
+be relatively straightforward.  
+
 Assuming you have met all the prerequisites, the module can now be built
 using this sequence of commands:
 
-    perl Makefile.PL
-    make
-    make test
+Step 1 :  Edit the file config.in to suit you local installation.
+          Instructions are given in the file. 
+
+Step 2 :  Build and test the module using this sequence of commands:
+
+              perl Makefile.PL
+              make
+              make test
 
 INSTALLATION
 ------------
@@ -257,5 +265,13 @@ CHANGES
   1.10 - 5th February 2001
 
       * fixed a bug in memGunzip. Used Z_ERR instead of Z_DATA_ERROR.
+
+  1.11 - 17th February 2001
+
+      * Added logic in Makefile.PL to toggle between using $^W and
+        the warnings pragma in the module.
+
+      * The module, the examples & the test harness are now all strict
+        & warnings clean.
 
 Paul Marquess <Paul.Marquess@btinternet.com>

@@ -1,12 +1,19 @@
 #!/usr/local/bin/perl
 
+use strict ;
+use warnings ;
+
 use Compress::Zlib ;
 
 die "Usage: gzcat file...\n"
     unless @ARGV ;
 
+my $file ;
+
 foreach $file (@ARGV) {
-    $gz = gzopen($file, "rb") 
+    my $buffer ;
+
+    my $gz = gzopen($file, "rb") 
          or die "Cannot open $file: $gzerrno\n" ;
 
     print $buffer while $gz->gzread($buffer) > 0 ;
