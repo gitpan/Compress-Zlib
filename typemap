@@ -5,3 +5,4 @@ Bytef *				T_PV
 uInt				T_IV
 uLong				T_IV
 uLongf				T_IV
+const char *			T_PV

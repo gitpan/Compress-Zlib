@@ -5,7 +5,9 @@ use Compress::Zlib ;
 $x = inflateInit()
    or die "Cannot create a inflation stream\n" ;
 
-while ($size = read(STDIN, $input, 4096))
+$input = '' ;
+
+while (read(STDIN, $input, 4096))
 {
     ($output, $status) = $x->inflate($input) ;
 

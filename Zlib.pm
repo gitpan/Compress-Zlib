@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 2nd October 1995
-# Version : 0.3
+# Created : 22nd January 1996
+# Version : 0.4
 #
 #     Copyright (c) 1995 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -10,12 +10,15 @@
 
 package Compress::Zlib;
 
-use Carp ;
-
 require 5.002 ;
 require Exporter;
 require DynaLoader;
-require AutoLoader;
+use AutoLoader;
+use Carp ;
+
+use strict ;
+use vars qw($VERSION @ISA @EXPORT $AUTOLOAD 
+	    $deflateDefault $deflateParamsDefault $inflateDefault) ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -34,11 +37,8 @@ require AutoLoader;
 
 	ZLIB_VERSION
 
-        DEFLATED
-        DEF_MEM_LEVEL
-        DEF_WBITS
+        MAX_MEM_LEVEL
 	MAX_WBITS
-        OS_CODE
 
 	Z_ASCII
 	Z_BEST_COMPRESSION
@@ -48,12 +48,15 @@ require AutoLoader;
 	Z_DATA_ERROR
 	Z_DEFAULT_COMPRESSION
 	Z_DEFAULT_STRATEGY
+        Z_DEFLATED
 	Z_ERRNO
 	Z_FILTERED
 	Z_FINISH
 	Z_FULL_FLUSH
 	Z_HUFFMAN_ONLY
 	Z_MEM_ERROR
+	Z_NEED_DICT
+	Z_NO_COMPRESSION
 	Z_NO_FLUSH
 	Z_NULL
 	Z_OK
@@ -62,10 +65,11 @@ require AutoLoader;
 	Z_STREAM_ERROR
 	Z_SYNC_FLUSH
 	Z_UNKNOWN
+	Z_VERSION_ERROR
 );
 
 
-$VERSION = 0.3 ;
+$VERSION = "0.4" ;
 
 
 sub AUTOLOAD {
@@ -73,18 +77,16 @@ sub AUTOLOAD {
     # XS function.  If a constant is not found then control is passed
     # to the AUTOLOAD in AutoLoader.
 
-    local($constname);
+    my($constname);
     ($constname = $AUTOLOAD) =~ s/.*:://;
-    $val = constant($constname, @_ ? $_[0] : 0);
+    my $val = constant($constname, @_ ? $_[0] : 0);
     if ($! != 0) {
 	if ($! =~ /Invalid/) {
 	    $AutoLoader::AUTOLOAD = $AUTOLOAD;
 	    goto &AutoLoader::AUTOLOAD;
 	}
 	else {
-	    ($pack,$file,$line) = caller;
-	    die "Your vendor has not defined Compress::Zlib macro $constname, used at $file line $line.
-";
+	    croak "Your vendor has not defined Compress::Zlib macro $constname"
 	}
     }
     eval "sub $AUTOLOAD { $val }";
@@ -95,18 +97,19 @@ bootstrap Compress::Zlib $VERSION ;
 
 # Preloaded methods go here.
 
-sub ParseParameters
+sub ParseParameters($$)
 {
     my($ref, $default) = @_ ;
     my(%got) = %$default ;
     my (@Bad) ;
+    my ($key, $value) ;
 
     croak "2nd parameter is not a reference to a hash"
         unless ref $ref eq "HASH" ;
 
     while (($key, $value) = each %$ref)
     {
-        if (defined $default->{$key})
+        if (exists $default->{$key})
           { $got{$key} = $value }
         else
 	  { push (@Bad, $key) }
@@ -114,24 +117,31 @@ sub ParseParameters
     
     if (@Bad) {
         my ($bad) = join(", ", @Bad) ;
-        croak "$subname: unknown key value(s) @Bad" ;
+        croak "unknown key value(s) @Bad" ;
     }
 
-    \%got ;
+    return \%got ;
 }
 
 $deflateDefault = {
 	Level	   =>	Z_DEFAULT_COMPRESSION(),
-	Method	   =>	DEFLATED(),
+	Method	   =>	Z_DEFLATED(),
 	WindowBits =>	MAX_WBITS(),
-	MemLevel   =>	DEF_MEM_LEVEL(),
+	MemLevel   =>	MAX_MEM_LEVEL(),
 	Strategy   =>	Z_DEFAULT_STRATEGY(),
 	Bufsize    =>	4096,
+	Dictionary =>	"",
+	} ;
+
+$deflateParamsDefault = {
+	Level	   =>	Z_DEFAULT_COMPRESSION(),
+	Strategy   =>	Z_DEFAULT_STRATEGY(),
 	} ;
 
 $inflateDefault = {
-	WindowBits =>	DEF_WBITS(),
+	WindowBits =>	MAX_WBITS(),
 	Bufsize    =>	4096,
+	Dictionary =>	"",
 	} ;
 
 
@@ -145,37 +155,36 @@ sub deflateInit
 
     my ($got) = ParseParameters($ref, $deflateDefault) ;
     _deflateInit($got->{Level}, $got->{Method}, $got->{WindowBits}, 
-		$got->{MemLevel}, $got->{Strategy}, $got->{Bufsize}) ;
+		$got->{MemLevel}, $got->{Strategy}, $got->{Bufsize},
+		$got->{Dictionary}) ;
 		
 }
 
 sub inflateInit
 {
     croak "Usage: inflateInit([,{ } ])"
-	unless @_ == 1 or @_ == 0 ;
+    	unless @_ == 1 or @_ == 0 ;
 
-    my($output, $ref) = @_ ;
+    my($ref) = @_ ;
+    #my($output, $ref) = @_ ;
     $ref = {} unless $ref ;
  
     my ($got) = ParseParameters($ref, $inflateDefault) ;
-    _inflateInit($got->{WindowBits}, $got->{Bufsize}) ;
+    _inflateInit($got->{WindowBits}, $got->{Bufsize}, $got->{Dictionary}) ;
  
 }
 
-sub compress
+sub compress($)
 {
-    croak 'Usage: compress($buffer)'
-        unless @_ == 1 ;
-
     my ($x, $output, $out, $err) ;
 
-    if ( (($x, $err) = deflateInit())[1] == &Z_OK) {
+    if ( (($x, $err) = deflateInit())[1] == Z_OK()) {
 
         ($output, $err) = $x->deflate($_[0]) ;
-        return undef unless $err == &Z_OK ;
+        return undef unless $err == Z_OK() ;
 
         ($out, $err) = $x->flush() ;
-        return undef unless $err == &Z_OK ;
+        return undef unless $err == Z_OK() ;
     
         return ($output . $out) ;
 
@@ -185,17 +194,14 @@ sub compress
 }
 
 
-sub uncompress
+sub uncompress($)
 {
-    croak 'Usage: uncompress($buffer)'
-        unless @_ == 1 ;
-
     my ($x, $output, $err) ;
 
-    if ( (($x, $err) = inflateInit())[1] == &Z_OK)  {
+    if ( (($x, $err) = inflateInit())[1] == Z_OK())  {
  
         ($output, $err) = $x->inflate($_[0]) ;
-        return undef unless $err == &Z_STREAM_END ;
+        return undef unless $err == Z_STREAM_END() ;
  
 	return $output ;
     }
@@ -223,9 +229,11 @@ Compress::Zlib - Interface to zlib compression library
     ($d, $status) = deflateInit() ;
     ($out, $status) = $d->deflate($buffer) ;
     ($out, $status) = $d->flush() ;
+    $d->dict_adler() ;
 
     ($i, $status) = inflateInit() ;
     ($out, $status) = $i->inflate($buffer) ;
+    $i->dict_adler() ;
 
     $dest = compress($source) ;
     $dest = uncompress($source) ;
@@ -247,24 +255,26 @@ Compress::Zlib - Interface to zlib compression library
 =head1 DESCRIPTION
 
 The I<Compress::Zlib> module provides a Perl interface to the I<zlib>
-compression library. Most of the functionality provided by I<zlib> is
-available for use in I<Compress::Zlib>.
+compression library (see L</AUTHORS> for details about where to get
+I<zlib>). Most of the functionality provided by I<zlib> is available
+in I<Compress::Zlib>.
 
-The module actually can be split into two general areas of
-functionality, namely in-memory compression/decompression and
-read/write access to I<gzip> files. Each of these areas will be
-discussed separately below.
+The module can be split into two general areas of functionality, namely
+in-memory compression/decompression and read/write access to I<gzip>
+files. Each of these areas will be discussed separately below.
 
+B<WARNING: The interface defined in this document is alpha and is
+liable to change.>
 
 =head1 DEFLATE 
 
 The interface I<Compress::Zlib> provides to the in-memory I<deflate>
 (and I<inflate>) functions has been modified to fit into a Perl model.
 
-For both inflation and deflation, the Perl interface will I<always>
-consume the complete input buffer before returning. Also the output
-buffer returned will be automatically grown to fit the amount of output
-available.
+The main difference is that for both inflation and deflation, the Perl
+interface will I<always> consume the complete input buffer before
+returning. Also the output buffer returned will be automatically grown
+to fit the amount of output available.
 
 Here is a definition of the interface available:
 
@@ -273,8 +283,8 @@ Here is a definition of the interface available:
 
 Initialises a deflation stream. 
 
-It combines the features of both I<zlib> functions B<deflateInit> and
-B<deflateInit2>.
+It combines the features of the I<zlib> functions B<deflateInit>,
+B<deflateInit2> and B<deflateSetDictionary>.
 
 If successful, it will return the initialised deflation stream, B<$d>
 and B<$status> of C<Z_OK> in a list context. In scalar context it
@@ -286,7 +296,7 @@ I<undef> and B<$status> will hold the exact I<zlib> error code.
 The function takes one optional parameter, a reference to a hash.  The
 contents of the hash allow the deflation interface to be tailored.
 
-Below is a list of the valid keys that the hash can take.
+Below is a list of the valid keys that the hash can take:
 
 
 =over 5
@@ -301,7 +311,7 @@ The default is C<Z_DEFAULT_COMPRESSION>.
 =item B<Method>
 
 Defines the compression method. The only valid value at present (and
-the default) is C<DEFLATED>.
+the default) is C<Z_DEFLATED>.
 
 =item B<WindowBits>
 
@@ -315,7 +325,7 @@ Defaults to C<MAX_WBITS>.
 For a definition of the meaning and valid values for B<MemLevel>
 refer to the I<zlib> documentation for I<deflateInit2>.
 
-Defaults to C<DEF_MEM_LEVEL>.
+Defaults to C<MAX_MEM_LEVEL>.
 
 =item B<Strategy>
 
@@ -323,6 +333,15 @@ Defines the strategy used to tune the compression. The valid values are
 C<Z_DEFAULT_STRATEGY>, C<Z_FILTERED> and C<Z_HUFFMAN_ONLY>. 
 
 The default is C<Z_DEFAULT_STRATEGY>.
+
+=item B<Dictionary>
+
+When a dictionary is specified I<Compress::Zlib> will automatically
+call B<deflateSetDictionary> directly after calling B<deflateInit>. The
+Adler32 value for the dictionary can be obtained by calling tht method 
+C<$d->dict_adler()>.
+
+The default is no dictionary.
 
 =item B<Bufsize>
 
@@ -368,7 +387,9 @@ In a scalar context B<flush> will return B<$out> only.
 Note that flushing can degrade the compression ratio, so it should only
 be used to terminate a decompression.
 
+=head2 $d->dict_adler()
 
+Returns the adler32 value for the dictionary.
 
 =head2 Example
 
@@ -440,6 +461,10 @@ B<Bufsize>.
 
 Default is 4096.
 
+=item B<Dictionary>
+
+The default is no dictionary.
+
 =back
 
 Here is an example of using the B<inflateInit> optional parameter to
@@ -454,6 +479,8 @@ Inflates the complete contents of B<$buffer>
 Returns C<Z_OK> if successful and C<Z_STREAM_END> if the end of the
 compressed data has been reached.
 
+=head2 $i->dict_adler()
+
 
 =head2 Example
 
@@ -464,7 +491,9 @@ Here is an example of using B<inflate>.
     $x = inflateInit()
        or die "Cannot create a inflation stream\n" ;
 
-    while ($size = read(STDIN, $input, 4096))
+    $input = '' ;
+
+    while (read(STDIN, $input, 4096))
     {
         ($output, $status) = $x->inflate($input) ;
 
@@ -604,13 +633,14 @@ I<gzcat> function.
 
         print $buffer 
             while $gz->gzread($buffer) > 0 ;
-        die "Error reading from $file: $gzerrno\n" if $gzerrno ;
+        die "Error reading from $file: $gzerrno\n" 
+            if $gzerrno != Z_STREAM_END ;
     
         $gz->gzclose() ;
     }
 
 Below is a script which makes use of B<gzreadline>. It implements a
-simple very I<grep> like script.
+very simple I<grep> like script.
 
     use Compress::Zlib ;
 
@@ -627,7 +657,8 @@ simple very I<grep> like script.
             print if /$pattern/ ;
         }
     
-        die "Error reading from $file: $gzerrno\n" if $gzerrno ;
+        die "Error reading from $file: $gzerrno\n" 
+            if $gzerrno != Z_STREAM_END ;
     
         $gz->gzclose() ;
     }
@@ -651,25 +682,63 @@ of I<Compress::Zlib>.
 =head1 AUTHOR
 
 The I<Compress::Zlib> module was written by Paul Marquess,
-F<pmarquess@bfsec.bt.co.uk>.
+F<pmarquess@bfsec.bt.co.uk>. The latest copy of the module can be found
+on CPAN in F<modules/by-module/Compress/Compress-Zlib-x.x.tar.gz>.
 
 The I<zlib> compression library was written by Jean-loup Gailly
 F<gzip@prep.ai.mit.edu> and Mark Adler F<madler@alumni.caltech.edu>.
+It is available at F<ftp://ftp.uu.net/pub/archiving/zip/zlib*> and
+F<ftp://swrinde.nde.swri.edu/pub/png/src/zlib*>.
+
+Questions about I<zlib> itself should be sent to
+F<zlib@quest.jpl.nasa.gov> or, if this fails, to the addresses given
+for the authors above.
 
 =head1 MODIFICATION HISTORY
 
-=head2 0.1 
+=head2 0.1 2nd October 1995.
 
 First public release of I<Compress::Zlib>.
 
-Paul Marquess, 2nd October 1995.
 
-=head2 0.2 
+=head2 0.2 5th October 1995.
 
 Fixed a minor allocation problem in Zlib.xs
 
-Paul Marquess, 5th October 1995.
 
-=head2 0.3 
+=head2 0.3 12th October 1995.
 
-Paul Marquess, 12th October 1995.
+Added prototype specification.
+
+
+=head2 0.4 25th June 1996.
+
+=over 5
+
+=item 1.
+
+Documentation update.
+
+=item 2.
+
+Upgraded to support zlib 1.0.2
+
+=item 3.
+
+Added dictionary interface.
+
+=item 4.
+
+Fixed bug in gzreadline - previously it would keep returning the same
+buffer. This bug was reported by Helmut Jarausch
+
+=item 5.
+
+Removed dependancy to zutil.h and so dropped support for 
+	
+    DEF_MEM_LEVEL (use MAX_MEM_LEVEL instead)
+    DEF_WBITS     (use MAX_WBITS instead)
+
+
+=back
+

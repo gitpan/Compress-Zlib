@@ -1,4 +1,6 @@
-use ExtUtils::MakeMaker;
+require 5.002 ;
+use ExtUtils::MakeMaker 5.16 ;
+use Config ;
 
 # If libz is not installed in some place obvious, uncomment the next
 # line and change the path to point to the directory where libz is
@@ -7,20 +9,19 @@ use ExtUtils::MakeMaker;
 #$ZLIB_LIB     = '-L/usr/local/lib' ;
 
 # Change the path on the next line to point to the directory where
-# zlib.h, zconf.h and zutil.h can be found.
+# zlib.h and zconf.h can be found.
 
-$ZLIB_INCLUDE = '-I./zlib' ;
+#$ZLIB_INCLUDE = '-I/usr/local/include' ;
 
-# The next two line keep -w happy
-$ZLIB_LIB = '' unless defined $ZLIB_LIB ; 
-$ZLIB_INCLUDE = '' unless defined $ZLIB_INCLUDE ;
+
+# It shouldn't be necessary to change anything from here on.
 
 WriteMakefile(	
-                NAME   	 => 'Compress::Zlib',
-		VERSION  => '0.3',
-		LIBS	 => [ "$ZLIB_LIB -lz" ],
-	      	INC      => " $ZLIB_INCLUDE" ,
-		'dist'	 => {COMPRESS=>'gzip', SUFFIX=>'gz'}
+                NAME   	 	=> 'Compress::Zlib',
+		VERSION_FROM  	=> 'Zlib.pm',
+		LIBS	 	=> [ "$ZLIB_LIB -lz " ],
+	      	INC      	=> " $ZLIB_INCLUDE" ,
+		'dist'	 	=> {COMPRESS=>'gzip', SUFFIX=>'gz'},
 	    ) ;
 
 

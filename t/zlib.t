@@ -5,14 +5,13 @@ sub ok
 {
     my ($no, $ok) = @_ ;
 
-    ++ $total ;
-    ++ $totalBad unless $ok ;
+    #++ $total ;
+    #++ $totalBad unless $ok ;
 
     print "ok $no\n" if $ok ;
     print "not ok $no\n" unless $ok ;
 }
 
-$BUFLEN = 4096 ;
 
 $hello = <<EOM ;
 hello world
@@ -21,8 +20,10 @@ EOM
 
 $len   = length $hello ;
 
+print "1..76\n" ;
+
 # Check zlib_version and ZLIB_VERSION are the same.
-ok(1, Compress::Zlib::zlib_version == ZLIB_VERSION) ;
+ok(1, Compress::Zlib::zlib_version eq ZLIB_VERSION) ;
 
 # gzip tests
 #===========
@@ -53,6 +54,7 @@ $file = "$text.gz" ;
 ok(9, $f = gzopen($file, "wb")) ;
 
 # generate a long random string
+$contents = '' ;
 foreach (1 .. 5000)
   { $contents .= chr int rand 255 }
 
@@ -96,6 +98,8 @@ ok(18, ! $fil->gzclose ) ;
 # now try to read it back in
 ok(19, $fil = gzopen($name, "rb")) ;
 $aok = 1 ; 
+$remember = '';
+$line = '';
 while ($fil->gzreadline($line) > 0) {
     ($aok = 0), last
 	if $line ne $text[$lines] ;
@@ -187,7 +191,7 @@ unlink $name ;
 
 $hello = "hello mum" ;
 
-$compr = compress ($hello) ;
+$compr = compress($hello) ;
 ok(50, $compr ne "") ;
 
 
@@ -216,10 +220,11 @@ ok(54,  ($x, $err) = deflateInit( {Bufsize => 1} ) ) ;
 ok(55, $x) ;
 ok(56, $err == Z_OK) ;
  
+$Answer = '';
 foreach (@hello)
 {
     ($X, $status) = $x->deflate($_) ;
-    last unless $Status == Z_OK ;
+    last unless $status == Z_OK ;
 
     $Answer .= $X ;
 }
@@ -230,13 +235,13 @@ ok(58,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
 $Answer .= $X ;
  
  
- 
 @Answer = split('', $Answer) ;
  
 ok(59, ($k, $err) = inflateInit( {Bufsize => 1}) ) ;
 ok(60, $k) ;
 ok(61, $err == Z_OK) ;
  
+$GOT = '';
 foreach (@Answer)
 {
     ($Z, $status) = $k->inflate($_) ;
@@ -256,7 +261,7 @@ ok(63, $GOT eq $hello ) ;
 
 ok(64, $x = deflateInit() ) ;
  
-ok(65, (($X, $status) = $x->deflate($hello))[1] == Z_OK) ;
+ok(65, (($X, $status) = $x->deflate($contents))[1] == Z_OK) ;
 
 $Y = $X ;
  
@@ -271,15 +276,45 @@ ok(67, $k = inflateInit() ) ;
 ($Z, $status) = $k->inflate($Y) ;
  
 ok(68, $status == Z_STREAM_END) ;
-ok(69, $hello eq $Z ) ;
+ok(69, $contents eq $Z ) ;
 
+# deflate/inflate - preset dictionary
+# ===================================
 
-# all done.
+$dictionary = "hello" ;
+ok(70, $x = deflateInit({Level => Z_BEST_COMPRESSION,
+			 Dictionary => $dictionary} )) ;
+ 
+$dictID = $x->dict_adler() ;
 
-if ($totalBad) 
-    { print "$totalBad tests failed\n" }
-else 
-    { print "All $total tests successful\n" unless $totalBad }
+($X, $status) = $x->deflate($hello) ;
+ok(71, $status == Z_OK) ;
+($Y, $status) = $x->flush() ;
+ok(72, $status == Z_OK) ;
+$X .= $Y ;
+$x = 0 ;
+ 
+ok(73, $k = inflateInit({Dictionary => $dictionary}) ) ;
+ 
+($Z, $status) = $k->inflate($X);
+ok(74, $status == Z_STREAM_END) ;
+ok(75, $k->dict_adler() == $dictID);
+ok(76, $hello eq $Z ) ;
 
-
-
+##ok(76, $k->inflateSetDictionary($dictionary) == Z_OK);
+# 
+#$Z='';
+#while (1) {
+#    ($Z, $status) = $k->inflate($X) ;
+#    last if $status == Z_STREAM_END or $status != Z_OK ;
+#print "status=[$status] hello=[$hello] Z=[$Z]\n";
+#}
+#ok(77, $status == Z_STREAM_END) ;
+#ok(78, $hello eq $Z ) ;
+#print "status=[$status] hello=[$hello] Z=[$Z]\n";
+#
+#
+## all done.
+#
+#
+#

@@ -15,7 +15,8 @@ foreach $file (@ARGV) {
         print if /$pattern/ ;
     }
 
-    die "Error reading from $file: $gzerrno\n" if $gzerrno ;
+    die "Error reading from $file: $gzerrno\n" 
+        if $gzerrno != Z_STREAM_END ;
     
     $gz->gzclose() ;
 }
