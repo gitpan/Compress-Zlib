@@ -1,10 +1,10 @@
                                  Compress::Zlib
 
-                                  Version 1.07
+                                  Version 1.08
 
-                               27th November 1999
+                                 6th January 2000  
 
-             Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
+             Copyright (c) 1995-2000 Paul Marquess. All rights reserved.
          This program is free software; you can redistribute it and/or
                 modify it under the same terms as Perl itself.
 
@@ -219,5 +219,15 @@ CHANGES
       * Added the ability to build zlib along with the module.
         This feature is 90% based on a Makefile provided by Gurusamy
         Sarathy.
+
+  1.08 - 6 Jan 2000
+
+      * uncompress was clobbering its input parameter. Now it doesn't.
+        This bug was spotted by Deven T. Corzine.
+ 
+      * If a variable that only ever contained a number was given
+        to compress or delate, it would not be compresed properly. Now
+        it will be coerced to a string and then compressed. This bug
+        was spotted by Deven T. Corzine.
 
 Paul Marquess <Paul.Marquess@btinternet.com>

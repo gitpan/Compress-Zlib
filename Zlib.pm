@@ -1,9 +1,9 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 27th November 1999
-# Version : 1.07
+# Created : 6th January 2000
+# Version : 1.08
 #
-#     Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
+#     Copyright (c) 1995-2000 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
 #     modify it under the same terms as Perl itself.
 #
@@ -21,7 +21,7 @@ use strict ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD 
 	    $deflateDefault $deflateParamsDefault $inflateDefault) ;
 
-$VERSION = "1.07" ;
+$VERSION = "1.08" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -250,7 +250,7 @@ sub uncompress($)
 
     if ( (($x, $err) = inflateInit())[1] == Z_OK())  {
  
-        ($output, $err) = $x->inflate($in) ;
+        ($output, $err) = $x->__unc_inflate($in) ;
         return undef unless $err == Z_STREAM_END() ;
  
 	return $output ;
@@ -1096,5 +1096,22 @@ ANSI-ified the static functions in Zlib.xs
 
 Added the ability to build zlib along with the module.
 This feature is 90% based on a Makefile provided by Gurusamy Sarathy.
+
+=back
+
+=head2 1.08 27 January 2000
+
+=over 5
+
+=item 1.
+
+uncompress was clobbering its input parameter. Now it doesn't.  
+This bug was spotted by Deven T. Corzine.
+
+=item 2.
+
+If a variable that only ever contained a number was given to compress
+or delate, it would not be compresed properly. Now it will be coerced
+to a string and then compressed. This bug was spotted by Deven T. Corzine.
 
 =back

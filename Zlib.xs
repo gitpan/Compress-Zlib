@@ -1,9 +1,9 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <Paul.Marquess@btinternet.com>
- * Created : 27th November 1999
- * Version : 1.07
+ * Created : 6th January 2000
+ * Version : 1.08
  *
- *   Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
+ *   Copyright (c) 1995-2000 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
  *   modify it under the same terms as Perl itself.
  *
@@ -655,8 +655,8 @@ gzreadline(file, buf)
 int
 Zip_gzwrite(file, buf)
 	Compress::Zlib::gzFile	file
-	unsigned	len = SvCUR(ST(1)) ;
-	voidp 		buf = (voidp)SvPVX(ST(1)) ;
+	unsigned	len = NO_INIT
+	voidp 		buf = (voidp)SvPV(ST(1), len) ;
 	CLEANUP:
 	  SetGzError(file->gz) ;
 
@@ -836,8 +836,8 @@ deflate (s, buf)
     buf = deRef(buf, "deflate") ;
  
     /* initialise the input buffer */
-    s->stream.next_in = (Bytef*)SvPVX(buf) ;
-    s->stream.avail_in = SvCUR(buf) ;
+    s->stream.next_in = (Bytef*)SvPV(buf, s->stream.avail_in) ;
+    /* s->stream.avail_in = SvCUR(buf) ; */
 
     /* and the output buffer */
     /* output = sv_2mortal(newSVpv("", s->bufsize)) ; */
@@ -957,6 +957,8 @@ inflate (s, buf)
     int		outsize = NO_INIT 
     SV * 	output = NO_INIT
     int		err = Z_OK ;
+  ALIAS:
+    __unc_inflate = 1
   PPCODE:
   
     /* If the buffer is a reference, dereference it */
@@ -1014,11 +1016,13 @@ inflate (s, buf)
         *SvEND(output) = '\0';
     	
  	/* fix the input buffer */
- 	in = s->stream.avail_in ;
- 	SvCUR_set(buf, in) ;
- 	if (in)
-     	    Move(s->stream.next_in, SvPVX(buf), in, char) ;	
-        *SvEND(buf) = '\0';
+	if (ix == 0) {
+ 	    in = s->stream.avail_in ;
+ 	    SvCUR_set(buf, in) ;
+ 	    if (in)
+     	        Move(s->stream.next_in, SvPVX(buf), in, char) ;	
+            *SvEND(buf) = '\0';
+	}
     }
     else
         output = &PL_sv_undef ;
