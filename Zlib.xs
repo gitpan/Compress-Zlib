@@ -1,7 +1,7 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <pmqs@cpan.org>
- * Created : 29 October 2003
- * Version : 1.31
+ * Created : 26 November 2003
+ * Version : 1.32
  *
  *   Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
@@ -974,6 +974,7 @@ inflate (s, buf)
  	    if (in)
      	        Move(s->stream.next_in, SvPVX(buf), in, char) ;	
             *SvEND(buf) = '\0';
+            SvSETMAGIC(buf);
 	}
     }
     else
@@ -1008,6 +1009,7 @@ inflateSync (s, buf)
  	if (in)
      	    Move(s->stream.next_in, SvPVX(buf), in, char) ;	
         *SvEND(buf) = '\0';
+        SvSETMAGIC(buf);
     }
     OUTPUT:
 	RETVAL

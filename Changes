@@ -1,6 +1,22 @@
 CHANGES
 -------
 
+  1.32 - 26 November 2003
+
+      * Steve Hay reported a problem on rt.cpan.org with Windows and
+        MSCV++ 6.0 where the source from the zlib directory was getting
+        installed with the rest of the module.
+        https://rt.cpan.org/Ticket/Display.html?id=1741
+
+        This has been fixed by renaming the "zlib" directory to "zlib-src"
+        thus avoiding a conflict with the name of this Perl module.
+
+      * Fixed a bug in the inflate method where the input buffer is an
+        lvalue (via substr). Problem & solution reported by Salvador Fandiqo.
+
+      * Tightened up the logic in Makefile.PL when BUILD_ZLIB is
+        True. Issue spotted by Ralf S. Engelschall.
+
   1.31 - 29 October 2003
 
       * Reinstated the creation of .bak files - $^I seems to need a

@@ -278,21 +278,24 @@ sub ParseCONFIG
 
         $BUILD_ZLIB = 1 ;
 
+	# ZLIB_LIB & ZLIB_INCLUDE must point to the same place when 
+	# BUILD_ZLIB is specified.
+	die "INCLUDE & LIB must be the same when BUILD_ZLIB is True\n"
+	    if $ZLIB_LIB ne $ZLIB_INCLUDE ;
+
 	# Check the zlib source directory exists
-	die "ZLIB_LIB directory '$ZLIB_LIB' does not exits\n"
+	die "LIB/INCLUDE directory '$ZLIB_LIB' does not exits\n"
 	   unless -d $ZLIB_LIB ;
 
 	# check for a well known file
-	die "ZLIB_LIB directory, '$ZLIB_LIB', doesn't seem to have the zlib source files\n"
+	die "LIB/INCLUDE directory, '$ZLIB_LIB', doesn't seem to have the zlib source files\n"
 	   unless -e "$ZLIB_LIB/zlib.h" ;
 
 
 	# check Makefile.zlib has been copied to ZLIB_LIB
-	#if (! -e "$ZLIB_LIB/Makefile.PL") {
-	    copy 'Makefile.zlib', "$ZLIB_LIB/Makefile.PL" ||
-	       die "Could not copy Makefile.zlib to $ZLIB_LIB/Makefile.PL: $!\n" ;
-	    print "Created a Makefile.PL for zlib\n" ;
-	    #}
+	copy 'Makefile.zlib', "$ZLIB_LIB/Makefile.PL" ||
+	   die "Could not copy Makefile.zlib to $ZLIB_LIB/Makefile.PL: $!\n" ;
+	print "Created a Makefile.PL for zlib\n" ;
 	
 	# write the Makefile
 	print "Building Zlib enabled\n" ;

@@ -1,14 +1,14 @@
                                  Compress::Zlib
 
-                                  Version 1.31
+                                  Version 1.32
 
-                                 29 October 2003
+                                 26 November 2003
 
              Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
             This program is free software; you can redistribute it and/or
                 modify it under the same terms as Perl itself.
 
-           The directory zlib contains a subset of the source files copied 
+         The directory zlib-src contains a subset of the source files copied 
 	   directly from zlib version 1.1.4.  These files are Copyright(C) 
 	            1995-2002 Jean-loup Gailly and Mark Adler.
                  Full source for the zlib library is available at 
@@ -110,8 +110,8 @@ before building this module.
   as follows:
   
       BUILD_ZLIB = True
-      INCLUDE    = ./zlib
-      LIB        = ./zlib
+      INCLUDE    = ./zlib-src
+      LIB        = ./zlib-src
       OLD_ZLIB   = False
   
   

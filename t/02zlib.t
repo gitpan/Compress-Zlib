@@ -38,7 +38,7 @@ EOM
 my $len   = length $hello ;
 
 
-print "1..232\n" ;
+print "1..239\n" ;
 
 # Check zlib_version and ZLIB_VERSION are the same.
 ok(1, Compress::Zlib::zlib_version eq ZLIB_VERSION) ;
@@ -892,3 +892,30 @@ EOM
 
 }
 
+{
+    # test inflate with a substr
+
+    ok(233, my $x = deflateInit() ) ;
+     
+    ok(234, (my ($X, $status) = $x->deflate($contents))[1] == Z_OK) ;
+    
+    my $Y = $X ;
+
+     
+     
+    ok(235, (($X, $status) = $x->flush() )[1] == Z_OK ) ;
+    $Y .= $X ;
+     
+    my $append = "Appended" ;
+    $Y .= $append ;
+     
+    ok(236, $k = inflateInit() ) ;
+     
+    ($Z, $status) = $k->inflate(substr($Y, 0, -1)) ;
+     
+    ok(237, $status == Z_STREAM_END) ;
+    #print "status $status Y [$Y]\n" ;
+    ok(238, $contents eq $Z ) ;
+    ok(239, $Y eq $append);
+    
+}
