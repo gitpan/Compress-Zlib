@@ -1,6 +1,6 @@
                                  Compress::Zlib
 
-                                  Version 1.12
+                                  Version 1.13
 
                                  28th April 2001 
 
@@ -278,5 +278,9 @@ CHANGES
 
       * Modified Makefile.PL to only enable the warnings pragma if
         using perl 5.6.1 or better.
+
+  1.13 - 
+
+      * 
 
 Paul Marquess <Paul.Marquess@btinternet.com>

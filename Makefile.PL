@@ -32,10 +32,15 @@ WriteMakefile(
 	       AUTHOR  	=> 'Paul Marquess <Paul.Marquess@btinternet.com>')
 	    : ()
 	),
+	'depend'	=> {'dist' => 'MyRelease' },
 	) ;
 
 sub MY::postamble {
     my $postamble =<<'END';
+
+MyRelease:	
+	echo hello
+
 Zlib.xs:	typemap
 	@$(TOUCH) Zlib.xs
 
