@@ -11,6 +11,8 @@ examples/filtinf
 examples/gzcat
 examples/gzgrep
 examples/gzstream
-t/zlib.t
+fallback.h
+fallback.xs
 t/examples.t
+t/zlib.t
 typemap

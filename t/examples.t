@@ -1,6 +1,6 @@
 
 use strict ;
-use warnings ;
+local ($^W) = 1; #use warnings ;
 
 sub ok
 {
@@ -11,6 +11,7 @@ sub ok
 
     print "ok $no\n" if $ok ;
     print "not ok $no\n" unless $ok ;
+    printf "# Failed test at line %d\n", (caller)[2] unless $ok ;
 }
 
 sub writeFile
