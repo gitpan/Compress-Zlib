@@ -1,7 +1,7 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <Paul.Marquess@btinternet.com>
- * Created : 22 October 2002
- * Version : 1.17
+ * Created : 23 October 2002
+ * Version : 1.18
  *
  *   Copyright (c) 1995-2002 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
@@ -510,6 +510,14 @@ Zip_gzclose(file)
 int
 Zip_gzeof(file)
 	Compress::Zlib::gzFile		file
+	CODE:
+#ifdef OLD_ZLIB
+	croak("gzeof needs zlib 1.0.6 or better") ;
+#else
+	RETVAL = gzeof(file->gz);
+#endif
+	OUTPUT:
+	    RETVAL
 
 
 #define Zip_gzsetparams(file,l,s) gzsetparams(file->gz,l,s)
@@ -518,6 +526,14 @@ Zip_gzsetparams(file, level, strategy)
 	Compress::Zlib::gzFile		file
 	int		level
 	int		strategy
+	CODE:
+#ifdef OLD_ZLIB
+	croak("gzsetparams needs zlib 1.0.6 or better") ;
+#else
+	RETVAL = gzsetparams(file->gz, level, strategy);
+#endif
+	OUTPUT:
+	    RETVAL
 
 void
 DESTROY(file)

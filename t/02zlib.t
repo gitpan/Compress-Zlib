@@ -38,7 +38,7 @@ EOM
 my $len   = length $hello ;
 
 
-print "1..240\n" ;
+print "1..230\n" ;
 
 # Check zlib_version and ZLIB_VERSION are the same.
 ok(1, Compress::Zlib::zlib_version eq ZLIB_VERSION) ;
@@ -260,7 +260,7 @@ unlink $name ;
   binmode $g ; # for OS/2
  
   my $first ;
-  my $ret = sysread($g, $first, length($line_one));
+  my $ret = read($g, $first, length($line_one));
   ok(64, $ret == length($line_one));
 
   ok(65, $first eq $line_one) ;
@@ -302,7 +302,7 @@ unlink $name ;
   binmode FH2; # for OS/2
  
   my $first ;
-  my $ret = sysread(FH2, $first, length($line_one));
+  my $ret = read(FH2, $first, length($line_one));
   ok(75, $ret == length($line_one));
  
   ok(76, $first eq $line_one) ;
@@ -914,41 +914,3 @@ EOM
 
 }
 
-{
-    # gzsetparams
-
-    my $hello = "I am a HAL 9000 computer" x 2001 ;
-    my $len_hello = length $hello ;
-    my $goodbye = "Will I dream?" x 2010;
-    my $len_goodbye = length $goodbye;
-
-    my ($input, $err, $answer, $X, $status, $Answer);
-     
-    my $name = "test.gz" ;
-    unlink $name ;
-    ok(231, my $x = gzopen($name, "wb")) ;
-
-    ok(232, $x->gzwrite($hello) == $len_hello) ;
-    $input .= $hello;
-    
-    # error cases
-    eval { $x->gzsetparams() };
-    ok(233, $@ =~ /^Usage: Compress::Zlib::gzFile::gzsetparams\(file, level, strategy\) at/);
-
-    # change both Level & Strategy
-    $status = $x->gzsetparams(Z_BEST_SPEED, Z_HUFFMAN_ONLY) ;
-    ok(234, $status == Z_OK) ;
-    
-    ok(235, $x->gzwrite($goodbye) == $len_goodbye) ;
-    $input .= $goodbye;
-    
-    ok(236, ! $x->gzclose ) ;
-
-    ok(237, my $k = gzopen($name, "rb")) ;
-     
-    my $len = length $input ;
-    ok(238, $k->gzread($uncompressed, $len) == $len) ;
-
-    ok(239, $uncompressed  eq $input ) ;
-    ok(240, ! $k->gzclose ) ;
-}

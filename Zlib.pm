@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 22 October 2002
-# Version : 1.17
+# Created : 23 October 2002
+# Version : 1.18
 #
 #     Copyright (c) 1995-2002 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@ local ($^W) = 1; #use warnings ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 use vars qw($deflateDefault $deflateParamsDefault $inflateDefault);
 
-$VERSION = "1.17" ;
+$VERSION = "1.18" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -942,6 +942,8 @@ Change settings for the deflate stream C<$gz>.
 
 The list of the valid options is shown below. Options not specified
 will remain unchanged.
+
+Note: This methos os only available if you are running zlib 1.0.6 or better.
 
 =over 5
 

@@ -18,4 +18,5 @@ t/01version.t
 t/02zlib.t
 t/03examples.t
 t/04encoding.t
+t/05gzsetp.t
 typemap

@@ -36,4 +36,22 @@ INCLUDE 	= /usr/local/include
 
 LIB	= /usr/local/lib
 
+# 4. Is your zlib version 1.0.5 or older?
+#
+#    Some systems ship with quite old versions of zlib. If your system has zlib
+#    1.0.5 or older, set the OLD_ZLIB variable to true.
+#
+#    Alternatively, you could upgrade to a newer version of zlib. See the
+#    README file for details of where to get the zlib source.
+#
+#    Setting this variable to True will disable acces to the following zlib
+#    functions
+#
+#        gzsetparams
+#        gzeof
+
+
+OLD_ZLIB = False
+#OLD_ZLIB = True
+
 # end of file config.in

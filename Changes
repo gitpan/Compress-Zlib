@@ -1,6 +1,14 @@
 CHANGES
 -------
 
+  1.18 - 24 October 2002
+
+      * fixed a Win32 problem in t/02zlib.t by changing sysread to read.
+
+      * zlib 1.0.5 & older doesn't have gzsetparams & gzeof. Added a new
+        variable to config.in to flag an old version of zlib. Split
+        out the tests for gzsetparams into t/05gzsetp.t
+
   1.17 - 22 October 2002
 
       * Moved the test to check the versions of libz & zlib.h into a separate

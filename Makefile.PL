@@ -8,6 +8,7 @@ use File::Copy ;
 my $ZLIB_LIB ;
 my $ZLIB_INCLUDE ;
 my $BUILD_ZLIB = 0 ;
+my $OLD_ZLIB = '' ;
 
 ParseCONFIG() ;
 
@@ -18,6 +19,7 @@ WriteMakefile(
 	NAME   	 	=> 'Compress::Zlib',
 	VERSION_FROM  	=> 'Zlib.pm',
 	INC      	=> "-I$ZLIB_INCLUDE" ,
+	DEFINE   	=> "$OLD_ZLIB" ,
 	XS	 	=> { 'Zlib.xs' => 'Zlib.c' },
 	'depend' 	=> { 'Makefile'	=> 'config.in' },
 	'clean' 	=> { FILES => 'constants.h constants.xs' },
@@ -124,6 +126,7 @@ MyDoubleCheck:
 	@echo Checking config.in is setup for a release
 	@(grep "^LIB.*/usr/local/lib" config.in && 		\
 	grep "^INCLUDE.*/usr/local/include" config.in &&	\
+	grep "^OLD_ZLIB = False" config.in &&	\
 	grep "^BUILD_ZLIB.*False" config.in) >/dev/null ||		\
 	(echo config.in needs fixing ; exit 1)
 	@echo config.in is ok
@@ -195,7 +198,7 @@ sub ParseCONFIG
     my ($k, $v) ;
     my @badkey = () ;
     my %Info = () ;
-    my @Options = qw( INCLUDE LIB BUILD_ZLIB ) ;
+    my @Options = qw( INCLUDE LIB BUILD_ZLIB OLD_ZLIB ) ;
     my %ValidOption = map {$_, 1} @Options ;
     my %Parsed = %ValidOption ;
     my $CONFIG = 'config.in' ;
@@ -230,6 +233,10 @@ sub ParseCONFIG
 
     $ZLIB_INCLUDE = $ENV{'ZLIB_INCLUDE'} || $Info{'INCLUDE'} ;
     $ZLIB_LIB = $ENV{'ZLIB_LIB'} || $Info{'LIB'} ;
+
+    my $y = $ENV{'OLD_ZLIB'} || $Info{'OLD_ZLIB'} ;
+    $OLD_ZLIB = '-DOLD_ZLIB' if $y and $y =~ /^yes|on|true|1$/i;
+
     my $x = $ENV{'BUILD_ZLIB'} || $Info{'BUILD_ZLIB'} ;
 
     if ($x and $x =~ /^yes|on|true|1$/i ) {
