@@ -1,0 +1,23 @@
+# Filename:	config.in
+#
+# written by Paul Marquess <Paul.Marquess@btinternet.com>
+# last modified 12th Sept 1999
+# version 1.06
+
+# 1. Where are the files zlib.h and zconf.h?
+#
+#    Change the path below to point to the directory where zlib.h 
+#    and zconf.h are installed on your system.
+
+#INCLUDE	= /usr/local/include
+INCLUDE	= ./libraries/1.1.3
+
+# 2. Where is libz?
+#
+#    Change the path below to point to the directory where libz is
+#    installed on your system.
+
+#LIB	= /usr/local/lib
+LIB	= ./libraries/1.1.3
+
+# end of file config.in

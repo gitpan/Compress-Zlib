@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 3rd June 1999
-# Version : 1.05
+# Created : 20th September 1999
+# Version : 1.06
 #
 #     Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@ use strict ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD 
 	    $deflateDefault $deflateParamsDefault $inflateDefault) ;
 
-$VERSION = "1.05" ;
+$VERSION = "1.06" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -171,8 +171,8 @@ sub ParseParameters($@)
 }
 
 $deflateDefault = {
-	'Level'	    =>	Z_DEFAULT_COMPRESSION(),
-	'Method'	    =>	Z_DEFLATED(),
+	'Level'	     =>	Z_DEFAULT_COMPRESSION(),
+	'Method'     =>	Z_DEFLATED(),
 	'WindowBits' =>	MAX_WBITS(),
 	'MemLevel'   =>	MAX_MEM_LEVEL(),
 	'Strategy'   =>	Z_DEFAULT_STRATEGY(),
@@ -181,7 +181,7 @@ $deflateDefault = {
 	} ;
 
 $deflateParamsDefault = {
-	'Level'	    =>	Z_DEFAULT_COMPRESSION(),
+	'Level'	     =>	Z_DEFAULT_COMPRESSION(),
 	'Strategy'   =>	Z_DEFAULT_STRATEGY(),
 	} ;
 
@@ -318,7 +318,7 @@ Compress::Zlib - Interface to zlib compression library
     $d->dict_adler() ;
 
     ($i, $status) = inflateInit( [OPT] ) ;
-    ($out, $status) = $i->inflate($buffer) ;
+    ($out, $status) = $i->inflate($buffer, [$last]) ;
     $i->dict_adler() ;
 
     $dest = compress($source) ;
@@ -582,7 +582,9 @@ Inflates the complete contents of B<$buffer>. The buffer can either be
 a scalar or a scalar reference.
 
 Returns C<Z_OK> if successful and C<Z_STREAM_END> if the end of the
-compressed data has been reached. 
+compressed data has been successfully reached. 
+If not successful, B<$out> will be I<undef> and B<$status> will hold
+the I<zlib> error code.
 
 The C<$buffer> parameter is modified by C<inflate>. On completion it
 will contain what remains of the input buffer after inflation. This
@@ -591,11 +593,12 @@ C<Z_OK>. When the return status is C<Z_STREAM_END> the C<$buffer>
 parameter will contains what (if anything) was stored in the input
 buffer after the deflated data stream.
 
-This feature is needed when processing a file format that encapsulates
-a  deflated data stream (e.g. gzip, zip).
+This feature is useful when processing a file format that encapsulates
+a  compressed data stream (e.g. gzip, zip).
 
 =head2 B<$i-E<gt>dict_adler()>
 
+Returns the adler32 value for the dictionary.
 
 =head2 Example
 
@@ -840,6 +843,29 @@ The buffer parameters can either be a scalar or a scalar reference.
 
 If the $crc parameters is C<undef>, the crc value will be reset.
 
+=head1 ACCESSING ZIP FILES
+
+If you want to use this module to access zip files there are a number of
+undocumented features in the zlib library you need to be aware of.
+
+=over 5
+
+=item 1.
+
+When calling B<inflateInit> or B<deflateInit> the B<WindowBits> parameter
+must be set to C<-MAX_WBITS>. This disables the creation of the zlib
+header.
+
+=item 2.
+
+The zlib function B<inflate>, and so the B<inflate> method supplied in
+this module, assume that there is at leat one trailing byte after the
+compressed data stream. Normally this isn't a problem because both
+the gzip and zip file formats will guarantee that there is data directly
+after the compressed data stream.
+
+=back
+
 =head1 CONSTANTS
 
 All the I<zlib> constants are automatically imported when you make use
@@ -851,15 +877,8 @@ The I<Compress::Zlib> module was written by Paul Marquess,
 F<Paul.Marquess@btinternet.com>. The latest copy of the module can be
 found on CPAN in F<modules/by-module/Compress/Compress-Zlib-x.x.tar.gz>.
 
-The I<zlib> compression library was written by Jean-loup Gailly
-F<gzip@prep.ai.mit.edu> and Mark Adler F<madler@alumni.caltech.edu>.
-It is available at F<ftp://ftp.uu.net/pub/archiving/zip/zlib*> and
-F<ftp://swrinde.nde.swri.edu/pub/png/src/zlib*>. Alternatively check
-out the zlib home page at F<http://quest.jpl.nasa.gov/zlib/>.
-
-Questions about I<zlib> itself should be sent to
-F<zlib@quest.jpl.nasa.gov> or, if this fails, to the addresses given
-for the authors above.
+The primary site for the I<zlib> compression library is
+F<http://www.cdrom.com/pub/infozip/zlib/>.
 
 =head1 MODIFICATION HISTORY
 
@@ -1040,5 +1059,27 @@ earlier. Changed to use newSVpv instead.
 
 The module needs Perl 5.004 or better, so updated the version checking in
 Zlib.pm and Makefile.PL
+
+=back
+
+=head2 1.06 20 September 1999
+
+=over 5
+
+=item 1.
+
+Fixed a nasty problem where inflate could truncate the data
+returned. Thanks to Douglas Thomson <dougt@mugc.cc.monash.edu.au> for
+both spotting the problem and fixing the bug.
+
+=item 2.
+
+Added a note about the undocumented features in zlib that are required
+when accessing zip files.
+
+=item 3.
+
+gzclose will now get called automaticallly when the gzip object is
+destroyed.
 
 =back

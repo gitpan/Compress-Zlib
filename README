@@ -1,8 +1,8 @@
                                  Compress::Zlib
 
-                                  Version 1.05
+                                  Version 1.06
 
-                                  3rd June 1999
+                               20th September 1999
 
              Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
          This program is free software; you can redistribute it and/or
@@ -21,16 +21,14 @@ PREREQUISITES
 -------------
 
 Before you can build Compress::Zlib you need to have the following
-thing installed on your system:
+installed on your system:
 
     * Perl 5.004 or better. 
-    * Info-zip zlib 1.0.2, 1.0.3 or 1.0.4 (note that this module is NOT
+    * Info-zip zlib 1.0.2 or better (note that this module is NOT
       compatable with versions of zlib <= 1.0.1).
 
       The zlib compression library is available at
-      ftp://ftp.uu.net/pub/archiving/zip/zlib* and
-      ftp://swrinde.nde.swri.edu/pub/png/src/zlib*.
-      The zlib home page is http://www.cdrom.com/pub/infozip/zlib/
+      http://www.cdrom.com/pub/infozip/zlib/
 
 
 BUILDING THE MODULE
@@ -41,8 +39,8 @@ be relatively straightforward.
 
 The only things you might have to change for building the module are
 the names of the directories where the zlib library, libz, is installed
-and the directory where zlib.h and zconf.h are stored. Edit Makefile.PL
-and change ZLIB_LIB and ZLIB_INCLUDE if necessary.
+and the directory where zlib.h and zconf.h are stored. Edit config.in
+and change the LIB and INCLUDE variables if necessary.
 
 The module can now be built using this sequence of commands:
 
@@ -194,6 +192,18 @@ CHANGES
 
       * The module needs Perl 5.004 or better, so updated the version
         checking in Zlib.pm and Makefile.PL
+
+  1.06 - 20 Sep 1999
+
+      * Fixed a nasty problem where inflate could truncate the data
+        returned. Thanks to Douglas Thomson <dougt@mugc.cc.monash.edu.au>
+        for both spotting the problem and fixing the bug.
+
+      * Added a note about the undocumented features in zlib that are
+        required when accessing zip files.
+
+      * gzclose will now get called automaticallly when the gzip object is
+        destroyed.
 
 
 Paul Marquess <Paul.Marquess@btinternet.com>

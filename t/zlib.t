@@ -20,7 +20,7 @@ EOM
 
 $len   = length $hello ;
 
-print "1..120\n" ;
+print "1..130\n" ;
 
 # Check zlib_version and ZLIB_VERSION are the same.
 ok(1, Compress::Zlib::zlib_version eq ZLIB_VERSION) ;
@@ -492,4 +492,54 @@ EOM
     ok(120, $uncomp eq $buffer) ;
  
     unlink $name ;
+}
+
+{
+
+    # Check - MAX_WBITS
+    # =================
+    
+    $hello = "Test test test test test";
+    @hello = split('', $hello) ;
+     
+    ok(121,  ($x, $err) = deflateInit( -Bufsize => 1, -WindowBits => -MAX_WBITS() ) ) ;
+    ok(122, $x) ;
+    ok(123, $err == Z_OK) ;
+     
+    $Answer = '';
+    foreach (@hello)
+    {
+        ($X, $status) = $x->deflate($_) ;
+        last unless $status == Z_OK ;
+    
+        $Answer .= $X ;
+    }
+     
+    ok(124, $status == Z_OK) ;
+    
+    ok(125,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
+    $Answer .= $X ;
+     
+     
+    @Answer = split('', $Answer) ;
+    # Undocumented corner -- extra byte needed to get inflate to return 
+    # Z_STREAM_END when done.  
+    push @Answer, " " ; 
+     
+    ok(126, ($k, $err) = inflateInit(-Bufsize => 1, -WindowBits => -MAX_WBITS()) ) ;
+    ok(127, $k) ;
+    ok(128, $err == Z_OK) ;
+     
+    $GOT = '';
+    foreach (@Answer)
+    {
+        ($Z, $status) = $k->inflate($_) ;
+        $GOT .= $Z ;
+        last if $status == Z_STREAM_END or $status != Z_OK ;
+     
+    }
+     
+    ok(129, $status == Z_STREAM_END) ;
+    ok(130, $GOT eq $hello ) ;
+    
 }

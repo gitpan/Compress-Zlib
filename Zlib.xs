@@ -1,7 +1,7 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <Paul.Marquess@btinternet.com>
- * Created : 3rd June 1999
- * Version : 1.05
+ * Created : 20th September 1999
+ * Version : 1.06
  *
  *   Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
@@ -57,6 +57,7 @@ typedef struct gzType {
     gzFile gz ;
     SV *   buffer ;
     int	   offset ;
+    bool   closed ;
 }  gzType ;
 
 typedef gzType* Compress__Zlib__gzFile ; 
@@ -527,6 +528,7 @@ gzopen_(path, mode)
     	    SvCUR_set(RETVAL->buffer, 0) ; 
 	    RETVAL->offset = 0 ;
 	    RETVAL->gz = gz ;
+	    RETVAL->closed = FALSE ;
 	}
 	else
 	    RETVAL = NULL ;
@@ -655,12 +657,15 @@ int
 Zip_gzclose(file)
 	Compress::Zlib::gzFile		file
 	CLEANUP:
+	  file->closed = TRUE ;
 	  SetGzErrorNo(RETVAL) ;
 
 void
 DESTROY(file)
 	Compress::Zlib::gzFile		file
 	CODE:
+	    if (! file->closed)
+	        Zip_gzclose(file) ;
 	    SvREFCNT_dec(file->buffer) ;
 	    safefree((char*)file) ;
 
@@ -948,7 +953,6 @@ inflate (s, buf)
     s->stream.avail_in = SvCUR(buf) ;
 	
     /* and the output buffer */
-    /* output = sv_2mortal(newSVpv("", s->bufsize+1)) ; */
     output = sv_2mortal(newSV(s->bufsize+1)) ;
     SvPOK_only(output) ;
     SvCUR_set(output, 0) ; 
@@ -956,18 +960,31 @@ inflate (s, buf)
     s->stream.next_out = (Bytef*) SvPVX(output)  ;
     s->stream.avail_out = outsize;
 
-    while (s->stream.avail_in != 0) { 
+    while (1) {
 
         if (s->stream.avail_out == 0) {
-            SvGROW(output, outsize + s->bufsize+1) ;
+            SvGROW(output, outsize + s->bufsize) ;
             s->stream.next_out = (Bytef*) SvPVX(output) + outsize ;
             outsize += s->bufsize ;
             s->stream.avail_out = s->bufsize ;
         }
+
         err = inflate(&(s->stream), Z_PARTIAL_FLUSH);
+	/* printf("err %d  avail_out %d avail_in %d\n", err, 
+		s->stream.avail_out, s->stream.avail_in) ; */
+	if (err == Z_BUF_ERROR) {
+	    if (s->stream.avail_out == 0)
+	        continue ;
+	    if (s->stream.avail_in == 0) {
+		err = Z_OK ;
+	        break ;
+	    }
+	}
+
 	if (err == Z_NEED_DICT && s->dictionary) {
 	    s->dict_adler = s->stream.adler ;
-            err = inflateSetDictionary(&(s->stream), (const Bytef*)SvPVX(s->dictionary),
+            err = inflateSetDictionary(&(s->stream), 
+	    				(const Bytef*)SvPVX(s->dictionary),
 					SvCUR(s->dictionary));
 	}
        
@@ -981,12 +998,12 @@ inflate (s, buf)
         SvPOK_only(output);
         SvCUR_set(output, outsize - s->stream.avail_out) ;
         *SvEND(output) = '\0';
-	
-	/* fix the input buffer */
-	in = s->stream.avail_in ;
-	SvCUR_set(buf, in) ;
-	if (in)
-	    Move(s->stream.next_in, SvPVX(buf), in, char) ;	
+    	
+ 	/* fix the input buffer */
+ 	in = s->stream.avail_in ;
+ 	SvCUR_set(buf, in) ;
+ 	if (in)
+     	    Move(s->stream.next_in, SvPVX(buf), in, char) ;	
         *SvEND(buf) = '\0';
     }
     else
