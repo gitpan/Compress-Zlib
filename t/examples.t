@@ -18,7 +18,7 @@ sub writeFile
     my($filename, @strings) = @_ ;
     open (F, ">$filename") 
         or die "Cannot open $filename: $!\n" ;
-    binmode(F) if $^O eq 'MSWin32';
+    binmode(F);
     foreach (@strings)
       { print F }
     close F ;
@@ -31,7 +31,7 @@ sub readFile
  
     open (F, "<$filename") 
         or die "Cannot open $filename: $!\n" ;
-    binmode(F) if $^O eq 'MSWin32';
+    binmode(F);
     while (<F>)
       { $string .= $_ }
     close F ;
@@ -113,7 +113,9 @@ ok(2, $a eq $hello1 . $hello2) ;
 # gzgrep
 # ######
 
-$a = `$Perl $Inc ${examples}/gzgrep '^x' $file1 $file2 2>&1` ;
+$a = ($^O eq 'MSWin32'
+     ? `$Perl $Inc ${examples}/gzgrep "^x" $file1 $file2 2>&1`
+     : `$Perl $Inc ${examples}/gzgrep '^x' $file1 $file2 2>&1`) ;
 ok(3, $? == 0) ;
 
 ok(4, $a eq join('', grep(/^x/, @hello1, @hello2))) ;
@@ -132,13 +134,13 @@ unlink $stderr ;
 writeFile($file1, $hello1) ;
 writeFile($file2, $hello2) ;
 
+# there's no way to set binmode on backticks in Win32 so we won't use $a later
 $a = `$Perl $Inc ${examples}/filtdef $file1 $file2 2>$stderr` ;
 ok(5, $? == 0) ;
 ok(6, -s $stderr == 0) ;
 
 unlink $stderr;
-writeFile($file1, $a) ;
-$a = `$Perl $Inc ${examples}/filtinf <$file1 2>$stderr` ;
+$a = `$Perl $Inc ${examples}/filtdef $file1 $file2 | $Perl $Inc ${examples}/filtinf 2>$stderr`;
 ok(7, $? == 0) ;
 ok(8, -s $stderr == 0) ;
 ok(9, $a eq $hello1 . $hello2) ;

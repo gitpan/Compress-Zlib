@@ -2,6 +2,8 @@
 
 use Compress::Zlib ;
 
+binmode STDIN;
+binmode STDOUT;
 $x = deflateInit()
    or die "Cannot create a deflation stream\n" ;
 

@@ -1,8 +1,8 @@
                                  Compress::Zlib
 
-                                  Version 1.00
+                                  Version 1.01
 
-                                  14th Nov 1997
+                                  30th Nov 1997
 
              Copyright (c) 1995/6/7 Paul Marquess. All rights reserved.
          This program is free software; you can redistribute it and/or
@@ -104,7 +104,9 @@ CHANGES
 
 	Added gzstream example script.
  
-  1.00 - Fixed crc32 & adler32. They were very broken. 
+  1.00 - 14 Nov 1997
+
+      * Fixed crc32 & adler32. They were very broken. 
 
       * The following functions can now take a scalar reference in
 	place of a scalar for their buffer parameters:
@@ -137,6 +139,12 @@ CHANGES
       * Fixed crc32 and adler32. They were both very broken.
 
       * Added the Compress::Zlib::memGzip function.
+
+  1.01 - 23 Nov 1997
+
+      * A number of fixes to the test suite and the example scripts to
+	allow them to work under win32. All courtesy of Gurusamy
+	Sarathy.
 
 
 Paul Marquess <pmarquess@bfsec.bt.co.uk>

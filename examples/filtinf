@@ -6,6 +6,8 @@ $x = inflateInit()
    or die "Cannot create a inflation stream\n" ;
 
 $input = '' ;
+binmode STDIN;
+binmode STDOUT;
 
 while (read(STDIN, $input, 4096))
 {

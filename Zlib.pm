@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
 # Created : 8th July 1996
-# Version : 1.00
+# Version : 1.01
 #
 #     Copyright (c) 1995, 1996, 1997 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -70,7 +70,7 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD
 );
 
 
-$VERSION = "1.00" ;
+$VERSION = "1.01" ;
 
 
 sub AUTOLOAD {
@@ -493,6 +493,9 @@ input, deflates it and writes it to standard output.
 
     use Compress::Zlib ;
 
+    binmode STDIN;
+    binmode STDOUT;
+
     $x = deflateInit()
        or die "Cannot create a deflation stream\n" ;
 
@@ -604,6 +607,8 @@ Here is an example of using B<inflate>.
        or die "Cannot create a inflation stream\n" ;
 
     $input = '' ;
+    binmode STDIN;
+    binmode STDOUT;
 
     while (read(STDIN, $input, 4096))
     {
@@ -790,6 +795,8 @@ output.
 
     use Compress::Zlib ;
 
+    binmode STDOUT; # gzopen only sets it on the fd
+
     my $gz = gzopen(\*STDOUT, "wb")
 	  or die "Cannot open stdout: $gzerrno\n" ;
 
@@ -960,5 +967,16 @@ Fixed crc32 and adler32. They were both very broken.
 =item 4,
 
 Added the Compress::Zlib::memGzip function.
+
+=back
+
+=head2 1.01 23 Nov 1997
+
+=over 5
+
+=item 1.
+
+A number of fixes to the test suite and the example scripts to allow
+them to work under win32. All courtesy of Gurusamy Sarathy.
 
 =back

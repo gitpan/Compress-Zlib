@@ -1,7 +1,7 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <pmarquess@bfsec.bt.co.uk>
  * Created : 22nd January 1996
- * Version : 1.00
+ * Version : 1.01
  *
  *   Copyright (c) 1995, 1996, 1997 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
@@ -50,8 +50,6 @@ typedef gzType* Compress__Zlib__gzFile ;
 #define Zip_gzflush(file, flush) gzflush(file->gz, flush) 
 #define Zip_gzclose(file) gzclose(file->gz)
 
-#define Zip_adler32(buf, adler) adler32(adler, buf, len)
-#define Zip_crc32(buf, crc) crc32(crc, buf, len)
 
 #define GZERRNO	"Compress::Zlib::gzerrno"
 
@@ -473,7 +471,7 @@ BOOT:
 	
     {
         /* Create the $gzerror scalar */
-        SV * gzerror_sv = perl_get_sv(GZERRNO, TRUE) ;
+        SV * gzerror_sv = perl_get_sv(GZERRNO, GV_ADDMULTI) ;
         sv_setiv(gzerror_sv, 0) ;
         sv_setpv(gzerror_sv, "") ;
         SvIOK_on(gzerror_sv) ;
@@ -665,10 +663,12 @@ BOOT:
     adlerInitial = adler32(0L, Z_NULL, 0);
     crcInitial   = crc32(0L, Z_NULL, 0);
 
+#define Zip_adler32(buf, adler) adler32(adler, buf, (uInt)len)
+
 uLong
 Zip_adler32(buf, adler=adlerInitial)
-        uLong   adler = NO_INIT
-        uInt    len = NO_INIT
+        uLong    adler = NO_INIT
+        STRLEN   len = NO_INIT
         Bytef *  buf = NO_INIT
 	SV *	 sv = ST(0) ;
 	INIT:
@@ -683,10 +683,12 @@ Zip_adler32(buf, adler=adlerInitial)
 	else
 	  adler = crcInitial ; 
  
+#define Zip_crc32(buf, crc) crc32(crc, buf, (uInt)len)
+
 uLong
 Zip_crc32(buf, crc=crcInitial)
-        uLong   crc = NO_INIT
-        uInt     len = NO_INIT
+        uLong    crc = NO_INIT
+        STRLEN   len = NO_INIT
         Bytef *  buf = NO_INIT
 	SV *	 sv = ST(0) ;
 	INIT:
