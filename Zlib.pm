@@ -1,9 +1,9 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 26 November 2003
-# Version : 1.32
+# Created : 14 January 2004
+# Version : 1.33
 #
-#     Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
+#     Copyright (c) 1995-2004 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
 #     modify it under the same terms as Perl itself.
 #
@@ -22,7 +22,7 @@ local ($^W) = 1; #use warnings ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 use vars qw($deflateDefault $deflateParamsDefault $inflateDefault);
 
-$VERSION = "1.32" ;
+$VERSION = "1.33" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -413,7 +413,9 @@ sub memGunzip($)
     _removeGzipHeader($string) == Z_OK() 
         or return undef;
      
-    my $x = inflateInit( -WindowBits => - MAX_WBITS()) 
+    my $bufsize = length $$string > 4096 ? length $$string : 4096 ;
+    my $x = inflateInit( -WindowBits => - MAX_WBITS(),
+                         -Bufsize => $bufsize) 
               or return undef;
     my ($output, $status) = $x->inflate($string);
     return undef 

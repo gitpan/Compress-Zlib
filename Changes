@@ -1,6 +1,20 @@
 CHANGES
 -------
 
+  1.33 - 14 January 2004
+
+      * Reworked Makefile.PL to avoid creating a private copy of zlib. 
+        This both simplifies the build, plus it makes life easier for VMS.
+
+      * Patches for Makefile.PL to get it to work on VMS supplied by
+        Craig A. Berry.
+
+      * memGunzip has very slow on FreeBSD. Turns out to be down to
+        the way realloc works on FreeBSD. Changed both inflate & deflate
+        to use exponentially increasing buffer sizes when they need to
+        realloc. Thanks to Peter Jeremy for the lowdown on FreeBSD
+        memory allocation.
+
   1.32 - 26 November 2003
 
       * Steve Hay reported a problem on rt.cpan.org with Windows and

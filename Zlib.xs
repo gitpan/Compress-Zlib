@@ -1,9 +1,9 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <pmqs@cpan.org>
- * Created : 26 November 2003
- * Version : 1.32
+ * Created : 14 January 2004
+ * Version : 1.33
  *
- *   Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
+ *   Copyright (c) 1995-2004 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
  *   modify it under the same terms as Perl itself.
  *
@@ -47,6 +47,7 @@
 typedef struct di_stream {
     z_stream stream;
     uLong    bufsize; 
+    uLong    bufinc; 
     SV *     dictionary ;
     uLong    dict_adler ;
     bool     deflateParams_out_valid ;
@@ -230,6 +231,7 @@ InitStream(bufsize)
 
     if (s)  {
         s->bufsize = bufsize ;
+        s->bufinc  = bufsize ;
     }
 
     return s ;
@@ -717,11 +719,11 @@ deflate (s, buf)
     s->stream.avail_in = SvCUR(buf) ;
 
     /* and the output buffer */
-    /* output = sv_2mortal(newSVpv("", s->bufsize)) ; */
-    output = sv_2mortal(newSV(s->bufsize)) ;
+    /* output = sv_2mortal(newSVpv("", s->bufinc)) ; */
+    output = sv_2mortal(newSV(s->bufinc)) ;
     SvPOK_only(output) ;
     SvCUR_set(output, 0) ; 
-    outsize = s->bufsize ;
+    outsize = s->bufinc ;
     s->stream.next_out = (Bytef*) SvPVX(output) ;
     s->stream.avail_out = outsize;
 
@@ -736,10 +738,11 @@ deflate (s, buf)
     while (s->stream.avail_in != 0) {
 
         if (s->stream.avail_out == 0) {
-            SvGROW(output, outsize + s->bufsize) ;
+            s->bufinc *= 2 ;
+            SvGROW(output, outsize + s->bufinc) ;
             s->stream.next_out = (Bytef*) SvPVX(output) + outsize ;
-            outsize += s->bufsize ;
-            s->stream.avail_out = s->bufsize ;
+            outsize += s->bufinc ;
+            s->stream.avail_out = s->bufinc ;
         }
         err = deflate(&(s->stream), Z_NO_FLUSH);
         if (err != Z_OK) 
@@ -769,11 +772,11 @@ flush(s, f=Z_FINISH)
   
     s->stream.avail_in = 0; /* should be zero already anyway */
   
-    /* output = sv_2mortal(newSVpv("", s->bufsize)) ; */
-    output = sv_2mortal(newSV(s->bufsize)) ;
+    /* output = sv_2mortal(newSVpv("", s->bufinc)) ; */
+    output = sv_2mortal(newSV(s->bufinc)) ;
     SvPOK_only(output) ;
     SvCUR_set(output, 0) ; 
-    outsize = s->bufsize ;
+    outsize = s->bufinc ;
     s->stream.next_out = (Bytef*) SvPVX(output) ;
     s->stream.avail_out = outsize;
       
@@ -788,10 +791,11 @@ flush(s, f=Z_FINISH)
     for (;;) {
         if (s->stream.avail_out == 0) {
 	    /* consumed all the available output, so extend it */
-	    SvGROW(output, outsize + s->bufsize) ;
+            s->bufinc *= 2 ;
+	    SvGROW(output, outsize + s->bufinc) ;
             s->stream.next_out = (Bytef*)SvPVX(output) + outsize ;
-	    outsize += s->bufsize ;
-            s->stream.avail_out = s->bufsize ;
+	    outsize += s->bufinc ;
+            s->stream.avail_out = s->bufinc ;
         }
         err = deflate(&(s->stream), f);
     
@@ -826,8 +830,10 @@ _deflateParams(s, flags, level, strategy, bufsize)
 	    s->Level = level ;
 	if (flags & 2)
 	    s->Strategy = strategy ;
-        if (bufsize) 
+        if (bufsize) {
             s->bufsize = bufsize; 
+            s->bufinc  = bufsize; 
+	}
         s->stream.avail_in = 0; 
         s->stream.next_out = &(s->deflateParams_out_byte) ;
         s->stream.avail_out = 1;
@@ -923,20 +929,21 @@ inflate (s, buf)
     s->stream.avail_in = SvCUR(buf) ;
 	
     /* and the output buffer */
-    output = sv_2mortal(newSV(s->bufsize+1)) ;
+    output = sv_2mortal(newSV(s->bufinc+1)) ;
     SvPOK_only(output) ;
     SvCUR_set(output, 0) ; 
-    outsize = s->bufsize ;
+    outsize = s->bufinc ;
     s->stream.next_out = (Bytef*) SvPVX(output)  ;
     s->stream.avail_out = outsize;
 
     while (1) {
 
         if (s->stream.avail_out == 0) {
-            SvGROW(output, outsize + s->bufsize+1) ;
+            s->bufinc *= 2 ;
+            SvGROW(output, outsize + s->bufinc+1) ;
             s->stream.next_out = (Bytef*) SvPVX(output) + outsize ;
-            outsize += s->bufsize ;
-            s->stream.avail_out = s->bufsize ;
+            outsize += s->bufinc ;
+            s->stream.avail_out = s->bufinc ;
         }
 
         err = inflate(&(s->stream), Z_SYNC_FLUSH);

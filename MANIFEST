@@ -1,6 +1,5 @@
 ANNOUNCE
 MANIFEST
-Makefile.zlib
 Makefile.PL
 README
 Changes

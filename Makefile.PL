@@ -1,9 +1,22 @@
 #! perl -w
+
 use strict ;
 require 5.004 ;
+
 use ExtUtils::MakeMaker 5.16 ;
 use Config ;
 use File::Copy ;
+
+BEGIN
+{
+    eval { require File::Spec::Functions ; File::Spec::Functions->import() } ;
+    if ($@)
+    {
+        *catfile = sub { return "$_[0]/$_[1]" }
+    }
+}
+
+require VMS::Filespec if $^O eq 'VMS';
 
 my $ZLIB_LIB ;
 my $ZLIB_INCLUDE ;
@@ -56,13 +69,13 @@ WriteMakefile(
 	DEFINE   	=> "$OLD_ZLIB" ,
 	XS	 	=> { 'Zlib.xs'    => 'Zlib.c' },
 	'depend' 	=> { 'Makefile'	  => 'config.in' },
-	'clean' 	=> { FILES        => 'constants.h constants.xs' },
+	'clean' 	=> { FILES        => '*.c constants.h constants.xs' },
 	'dist'	 	=> { COMPRESS     => 'gzip', 
 		             SUFFIX       => 'gz',
 			     DIST_DEFAULT => 'MyDoubleCheck Downgrade tardist',
 			    },
 	($BUILD_ZLIB
-	  ? (MYEXTLIB	=> "$ZLIB_LIB/libz\$(LIB_EXT)")
+          ? zlib_files($ZLIB_LIB)
 	  : (LIBS	=> [ "-L$ZLIB_LIB -lz " ])
 	),  
 	($] >= 5.005
@@ -70,7 +83,7 @@ WriteMakefile(
 	       AUTHOR  => 'Paul Marquess <pmqs@cpan.org>')
 	    : ()
 	),
-	) ;
+    ) ;
 
 my @names = qw(
 
@@ -142,7 +155,6 @@ if (eval {require ExtUtils::Constant; 1}) {
                                     );
 } 
 else {
-    use File::Copy;
     copy ('fallback.h', 'constants.h')
       or die "Can't copy fallback.h to constants.h: $!";
     copy ('fallback.xs', 'constants.xs')
@@ -178,51 +190,6 @@ Zlib.xs:	typemap
 	@$(TOUCH) Zlib.xs
 
 EOM
-
-    if ($BUILD_ZLIB) {
-        my $CD_ZLIB_LIB = $ZLIB_LIB;
-        $CD_ZLIB_LIB =~ s#/#\\#g if $^O =~ /MSWin32/ ;
-
-        if ($^O =~ /MSWin32/ && Win32::IsWin95()) {
-	    if ($Config{'make'} =~ /dmake/i) {
-	        # dmake-specific
-	        $postamble .= <<"EOT";
-\$(MYEXTLIB): $ZLIB_LIB/Makefile
-\@[
-	cd $CD_ZLIB_LIB
-	\$(MAKE) static
-	cd ..
-]
-EOT
-	    } 
-            elsif ($Config{'make'} =~ /nmake/i) {
-	        #
-	        $postamble .= <<"EOT";
-\$(MYEXTLIB): $ZLIB_LIB/Makefile
-	cd $CD_ZLIB_LIB
-	\$(MAKE) static
-	cd ..
-EOT
-	    } 
-        } 
-        elsif ($^O ne 'VMS') {
-            $postamble .= <<"EOT";
-
-\$(MYEXTLIB): $ZLIB_LIB/Makefile
-	cd $CD_ZLIB_LIB && \$(MAKE) static
-EOT
-        }
-        else {
-             $postamble .= <<"EOT";
-
-\$(MYEXTLIB) : ${ZLIB_LIB}descrip.mms
-	set def $ZLIB_LIB
-    $(MMS) static
-    set def [-]
-EOT
-        }
-
-    }
 
     return $postamble;
 
@@ -263,11 +230,16 @@ sub ParseCONFIG
 
     # check parsed values
     my @missing = () ;
-    die "The following keys are missing from $CONFIG file: [@missing]\n" 
+    die "The following keys are missing from $CONFIG  [@missing]\n" 
         if @missing = keys %Parsed ;
 
     $ZLIB_INCLUDE = $ENV{'ZLIB_INCLUDE'} || $Info{'INCLUDE'} ;
     $ZLIB_LIB = $ENV{'ZLIB_LIB'} || $Info{'LIB'} ;
+
+    if ($^O eq 'VMS') {
+        $ZLIB_INCLUDE = VMS::Filespec::vmspath($ZLIB_INCLUDE);
+        $ZLIB_LIB = VMS::Filespec::vmspath($ZLIB_LIB);
+    }
 
     my $y = $ENV{'OLD_ZLIB'} || $Info{'OLD_ZLIB'} ;
     $OLD_ZLIB = '-DOLD_ZLIB' if $y and $y =~ /^yes|on|true|1$/i;
@@ -289,13 +261,13 @@ sub ParseCONFIG
 
 	# check for a well known file
 	die "LIB/INCLUDE directory, '$ZLIB_LIB', doesn't seem to have the zlib source files\n"
-	   unless -e "$ZLIB_LIB/zlib.h" ;
+	   unless -e catfile($ZLIB_LIB, 'zlib.h') ;
 
 
 	# check Makefile.zlib has been copied to ZLIB_LIB
-	copy 'Makefile.zlib', "$ZLIB_LIB/Makefile.PL" ||
-	   die "Could not copy Makefile.zlib to $ZLIB_LIB/Makefile.PL: $!\n" ;
-	print "Created a Makefile.PL for zlib\n" ;
+    #copy 'Makefile.zlib', catfile($ZLIB_LIB, 'Makefile.PL') ||
+    #die "Could not copy Makefile.zlib to " . catfile($ZLIB_LIB, 'Makefile.PL') . ": $!\n" ;
+       #print "Created a Makefile.PL for zlib\n" ;
 	
 	# write the Makefile
 	print "Building Zlib enabled\n" ;
@@ -405,4 +377,55 @@ sub doUpDown
       { print }
 }
 
+
+sub zlib_files
+{
+    my $dir = shift ;
+
+    my @h_files = ();
+    my @c_files = ();
+    
+    if (-f catfile($dir, "infback.c")) {
+        # zlib 1.2.0 or greater
+        #
+        @h_files = qw(crc32.h    inffast.h inflate.h  trees.h    zconf.in.h 
+    	          zutil.h    deflate.h inffixed.h inftrees.h zconf.h  
+    		  zlib.h 
+    		 );
+        @c_files = qw(adler32  crc32   infback  inflate  uncompr
+    		  compress deflate gzio     inffast  inftrees  
+    		  trees    zutil 
+    		 );
+    }
+    else {
+        # zlib 1.1.x
+    
+        @h_files = qw(deflate.h  infcodes.h inftrees.h zconf.h zutil.h
+    		  infblock.h inffast.h  infutil.h  zlib.h
+    		 );
+        @c_files = qw(adler32  compress crc32    gzio    uncompr
+    		  deflate  trees    zutil    inflate infblock
+    		  inftrees infcodes infutil  inffast
+    		 );
+    }
+    
+    @h_files = map { catfile($dir, $_)  } @h_files ;
+    my @o_files = map { "$_\$(OBJ_EXT)" } 'Zlib', @c_files;
+    @c_files = map { "$_.c" } 'Zlib', @c_files ;
+
+    foreach my $file (@c_files)
+      { copy(catfile($dir, $file), '.') }
+    
+    return (
+        #'H'         =>  [ @h_files ],
+    	'C'         =>  [ @c_files ] ,
+        #'OBJECT'    => qq[ @o_files ],
+        'OBJECT'    => q[ $(O_FILES) ],
+        
+
+           ) ;
+}
+
+
 # end of file Makefile.PL
+

@@ -41,9 +41,13 @@ sub readFile
  
 
 my $Inc = '' ;
-foreach (@INC)
- { $Inc .= "-I$_ " }
- 
+if ($^O eq 'VMS') {
+  $Inc = '-"I[.blib.lib]" -"I[.blib.arch]"';
+}
+else {
+  foreach (@INC)
+   { $Inc .= "-I$_ " }
+} 
 my $Perl = '' ;
 $Perl = ($ENV{'FULLPERL'} or $^X or 'perl') ;
  
@@ -114,7 +118,7 @@ ok(2, $a eq $hello1 . $hello2) ;
 # gzgrep
 # ######
 
-$a = ($^O eq 'MSWin32'
+$a = ($^O eq 'MSWin32' || $^O eq 'VMS'
      ? `$Perl $Inc ${examples}/gzgrep "^x" $file1 $file2 2>&1`
      : `$Perl $Inc ${examples}/gzgrep '^x' $file1 $file2 2>&1`) ;
 ok(3, $? == 0) ;
