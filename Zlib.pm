@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 15th January 2001
-# Version : 1.09
+# Created : 5th February 2001
+# Version : 1.10
 #
 #     Copyright (c) 1995-2001 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@ use strict ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD 
 	    $deflateDefault $deflateParamsDefault $inflateDefault) ;
 
-$VERSION = "1.09" ;
+$VERSION = "1.10" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -316,7 +316,7 @@ sub _removeGzipHeader
     my ($magic1, $magic2, $method, $flags, $time, $xflags, $oscode) = 
         unpack ('CCCCVCC', $$string);
 
-    return Z_ERR()
+    return Z_DATA_ERROR()
         unless $magic1 == MAGIC1 and $magic2 == MAGIC2 and
            $method == Z_DEFLATED() and !($flags & RESERVED()) ;
     substr($$string, 0, MIN_HDR_SIZE) = '' ;

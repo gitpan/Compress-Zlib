@@ -34,7 +34,7 @@ EOM
 $len   = length $hello ;
 
 
-print "1..164\n" ;
+print "1..166\n" ;
 
 # Check zlib_version and ZLIB_VERSION are the same.
 ok(1, Compress::Zlib::zlib_version eq ZLIB_VERSION) ;
@@ -599,6 +599,16 @@ EOM
     ok(148, $buffer eq $ungzip) ;
  
     unlink $name ;
+
+    # check corrupt header -- too short
+    $dest = "x" ;
+    my $result = Compress::Zlib::memGunzip($dest) ;
+    ok(149, !defined $result) ;
+
+    # check corrupt header -- full of junk
+    $dest = "x" x 200 ;
+    $result = Compress::Zlib::memGunzip($dest) ;
+    ok(150, !defined $result) ;
 }
 
 # memGunzip with a gzopen created file
@@ -610,17 +620,17 @@ text
 
 EOM
 
-    ok(149, $fil = gzopen($name, "wb")) ;
+    ok(151, $fil = gzopen($name, "wb")) ;
 
-    ok(150, $fil->gzwrite($buffer) == length $buffer) ;
+    ok(152, $fil->gzwrite($buffer) == length $buffer) ;
 
-    ok(151, ! $fil->gzclose ) ;
+    ok(153, ! $fil->gzclose ) ;
 
     my $compr = readFile($name);
-    ok(152, length $compr) ;
+    ok(154, length $compr) ;
     my $unc = Compress::Zlib::memGunzip($compr) ;
-    ok(153, defined $unc) ;
-    ok(154, $buffer eq $unc) ;
+    ok(155, defined $unc) ;
+    ok(156, $buffer eq $unc) ;
     unlink $name ;
 }
 
@@ -632,9 +642,9 @@ EOM
     $hello = "Test test test test test";
     @hello = split('', $hello) ;
      
-    ok(155,  ($x, $err) = deflateInit( -Bufsize => 1, -WindowBits => -MAX_WBITS() ) ) ;
-    ok(156, $x) ;
-    ok(157, $err == Z_OK) ;
+    ok(157,  ($x, $err) = deflateInit( -Bufsize => 1, -WindowBits => -MAX_WBITS() ) ) ;
+    ok(158, $x) ;
+    ok(159, $err == Z_OK) ;
      
     $Answer = '';
     foreach (@hello)
@@ -645,9 +655,9 @@ EOM
         $Answer .= $X ;
     }
      
-    ok(158, $status == Z_OK) ;
+    ok(160, $status == Z_OK) ;
     
-    ok(159,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
+    ok(161,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
     $Answer .= $X ;
      
      
@@ -656,9 +666,9 @@ EOM
     # Z_STREAM_END when done.  
     push @Answer, " " ; 
      
-    ok(160, ($k, $err) = inflateInit(-Bufsize => 1, -WindowBits => -MAX_WBITS()) ) ;
-    ok(161, $k) ;
-    ok(162, $err == Z_OK) ;
+    ok(162, ($k, $err) = inflateInit(-Bufsize => 1, -WindowBits => -MAX_WBITS()) ) ;
+    ok(163, $k) ;
+    ok(164, $err == Z_OK) ;
      
     $GOT = '';
     foreach (@Answer)
@@ -669,7 +679,7 @@ EOM
      
     }
      
-    ok(163, $status == Z_STREAM_END) ;
-    ok(164, $GOT eq $hello ) ;
+    ok(165, $status == Z_STREAM_END) ;
+    ok(166, $GOT eq $hello ) ;
     
 }

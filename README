@@ -1,8 +1,8 @@
                                  Compress::Zlib
 
-                                  Version 1.09
+                                  Version 1.10
 
-                                 15th January 2001 
+                                 5th February 2001 
 
              Copyright (c) 1995-2001 Paul Marquess. All rights reserved.
          This program is free software; you can redistribute it and/or
@@ -254,5 +254,8 @@ CHANGES
         values are Z_NO_FLUSH, Z_PARTIAL_FLUSH, Z_SYNC_FLUSH, Z_FULL_FLUSH
         and Z_FINISH. The default is Z_FINISH.
 
+  1.10 - 5th February 2001
+
+      * fixed a bug in memGunzip. Used Z_ERR instead of Z_DATA_ERROR.
 
 Paul Marquess <Paul.Marquess@btinternet.com>
