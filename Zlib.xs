@@ -1,9 +1,9 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <Paul.Marquess@btinternet.com>
- * Created : 6th January 2000
- * Version : 1.08
+ * Created : 15th January 2001
+ * Version : 1.09
  *
- *   Copyright (c) 1995-2000 Paul Marquess. All rights reserved.
+ *   Copyright (c) 1995-2001 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
  *   modify it under the same terms as Perl itself.
  *
@@ -568,6 +568,7 @@ gzdopen_(fh, mode, offset)
             SvCUR_set(RETVAL->buffer, 0) ;
             RETVAL->offset = 0 ;
             RETVAL->gz = gz ;
+	    RETVAL->closed = FALSE ;
         }
         else
             RETVAL = NULL ;
@@ -651,11 +652,11 @@ gzreadline(file, buf)
             /* *SvEND(buf) = '\0'; */
         }
 
-#define Zip_gzwrite(file, buf) gzwrite(file->gz, buf, len)
+#define Zip_gzwrite(file, buf) gzwrite(file->gz, buf, (unsigned)len)
 int
 Zip_gzwrite(file, buf)
 	Compress::Zlib::gzFile	file
-	unsigned	len = NO_INIT
+	STRLEN		len = NO_INIT
 	voidp 		buf = (voidp)SvPV(ST(1), len) ;
 	CLEANUP:
 	  SetGzError(file->gz) ;
@@ -836,7 +837,7 @@ deflate (s, buf)
     buf = deRef(buf, "deflate") ;
  
     /* initialise the input buffer */
-    s->stream.next_in = (Bytef*)SvPV(buf, s->stream.avail_in) ;
+    s->stream.next_in = (Bytef*)SvPV(buf, *(STRLEN*)&s->stream.avail_in) ;
     /* s->stream.avail_in = SvCUR(buf) ; */
 
     /* and the output buffer */
@@ -883,8 +884,9 @@ DESTROY(s)
 
 
 void
-flush(s)
+flush(s, f=Z_FINISH)
     Compress::Zlib::deflateStream	s
+    int	f
     int	outsize = NO_INIT
     SV * output = NO_INIT
     int err = Z_OK ;
@@ -908,7 +910,7 @@ flush(s)
 	    outsize += s->bufsize ;
             s->stream.avail_out = s->bufsize ;
         }
-        err = deflate(&(s->stream), Z_FINISH);
+        err = deflate(&(s->stream), f);
     
         /* deflate has finished flushing only when it hasn't used up
          * all the available space in the output buffer: 

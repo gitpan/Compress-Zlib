@@ -12,6 +12,19 @@ sub ok
     print "not ok $no\n" unless $ok ;
 }
 
+sub readFile
+{
+    my ($filename) = @_ ;
+    my ($string) = '' ;
+ 
+    open (F, "<$filename")
+        or die "Cannot open $filename: $!\n" ;
+    binmode(F);
+    while (<F>)
+      { $string .= $_ }
+    close F ;
+    $string ;
+}     
 
 $hello = <<EOM ;
 hello world
@@ -21,7 +34,7 @@ EOM
 $len   = length $hello ;
 
 
-print "1..154\n" ;
+print "1..164\n" ;
 
 # Check zlib_version and ZLIB_VERSION are the same.
 ok(1, Compress::Zlib::zlib_version eq ZLIB_VERSION) ;
@@ -302,7 +315,6 @@ ok(79, $compr ne "") ;
 
 $keep_compr = $compr ;
 
-
 $uncompr = uncompress ($compr) ;
 
 ok(80, $hello eq $uncompr) ;
@@ -319,14 +331,12 @@ ok(83, $compr ne "") ;
 
 $keep_compr = $compr ;
 
-
 $uncompr = uncompress ($compr) ;
 
 ok(84, $hello eq $uncompr) ;
 
 ok(85, $hello eq $keep_hello) ;
 ok(86, $compr eq $keep_compr) ;
-
 
 # bigger compress
 
@@ -526,7 +536,7 @@ ok(123, $hello eq $Z ) ;
 
 }
 
-# minGzip
+# memGzip & memGunzip
 {
     my $name = "test.gz" ;
     my $buffer = <<EOM;
@@ -558,26 +568,59 @@ EOM
     ok(138, $uncomp eq $buffer) ;
  
     unlink $name ;
+
+    # now check that memGunzip can deal with it.
+    my $ungzip = Compress::Zlib::memGunzip($dest) ;
+    ok(139, defined $ungzip) ;
+    ok(140, $buffer eq $ungzip) ;
  
     # now do the same but use a reference 
 
     $dest = Compress::Zlib::memGzip(\$buffer) ; 
-    ok(139, length $dest) ;
+    ok(141, length $dest) ;
 
     # write it to disk
-    ok(140, open(FH, ">$name")) ;
+    ok(142, open(FH, ">$name")) ;
     print FH $dest ;
     close FH ;
 
     # uncompress with gzopen
-    ok(141, $fil = gzopen($name, "rb") ) ;
+    ok(143, $fil = gzopen($name, "rb") ) ;
  
-    ok(142, ($x = $fil->gzread($uncomp)) == $len) ;
+    ok(144, ($x = $fil->gzread($uncomp)) == $len) ;
  
-    ok(143, ! $fil->gzclose ) ;
+    ok(145, ! $fil->gzclose ) ;
 
-    ok(144, $uncomp eq $buffer) ;
+    ok(146, $uncomp eq $buffer) ;
  
+    # now check that memGunzip can deal with it.
+    $ungzip = Compress::Zlib::memGunzip(\$dest) ;
+    ok(147, defined $ungzip) ;
+    ok(148, $buffer eq $ungzip) ;
+ 
+    unlink $name ;
+}
+
+# memGunzip with a gzopen created file
+{
+    my $name = "test.gz" ;
+    my $buffer = <<EOM;
+some sample 
+text
+
+EOM
+
+    ok(149, $fil = gzopen($name, "wb")) ;
+
+    ok(150, $fil->gzwrite($buffer) == length $buffer) ;
+
+    ok(151, ! $fil->gzclose ) ;
+
+    my $compr = readFile($name);
+    ok(152, length $compr) ;
+    my $unc = Compress::Zlib::memGunzip($compr) ;
+    ok(153, defined $unc) ;
+    ok(154, $buffer eq $unc) ;
     unlink $name ;
 }
 
@@ -589,9 +632,9 @@ EOM
     $hello = "Test test test test test";
     @hello = split('', $hello) ;
      
-    ok(145,  ($x, $err) = deflateInit( -Bufsize => 1, -WindowBits => -MAX_WBITS() ) ) ;
-    ok(146, $x) ;
-    ok(147, $err == Z_OK) ;
+    ok(155,  ($x, $err) = deflateInit( -Bufsize => 1, -WindowBits => -MAX_WBITS() ) ) ;
+    ok(156, $x) ;
+    ok(157, $err == Z_OK) ;
      
     $Answer = '';
     foreach (@hello)
@@ -602,9 +645,9 @@ EOM
         $Answer .= $X ;
     }
      
-    ok(148, $status == Z_OK) ;
+    ok(158, $status == Z_OK) ;
     
-    ok(149,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
+    ok(159,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
     $Answer .= $X ;
      
      
@@ -613,9 +656,9 @@ EOM
     # Z_STREAM_END when done.  
     push @Answer, " " ; 
      
-    ok(150, ($k, $err) = inflateInit(-Bufsize => 1, -WindowBits => -MAX_WBITS()) ) ;
-    ok(151, $k) ;
-    ok(152, $err == Z_OK) ;
+    ok(160, ($k, $err) = inflateInit(-Bufsize => 1, -WindowBits => -MAX_WBITS()) ) ;
+    ok(161, $k) ;
+    ok(162, $err == Z_OK) ;
      
     $GOT = '';
     foreach (@Answer)
@@ -626,7 +669,7 @@ EOM
      
     }
      
-    ok(153, $status == Z_STREAM_END) ;
-    ok(154, $GOT eq $hello ) ;
+    ok(163, $status == Z_STREAM_END) ;
+    ok(164, $GOT eq $hello ) ;
     
 }

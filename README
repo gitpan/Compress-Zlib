@@ -1,10 +1,10 @@
                                  Compress::Zlib
 
-                                  Version 1.08
+                                  Version 1.09
 
-                                 6th January 2000  
+                                 15th January 2001 
 
-             Copyright (c) 1995-2000 Paul Marquess. All rights reserved.
+             Copyright (c) 1995-2001 Paul Marquess. All rights reserved.
          This program is free software; you can redistribute it and/or
                 modify it under the same terms as Perl itself.
 
@@ -17,6 +17,13 @@ This module provides a Perl interface to part of the info-zip zlib
 compression library.  For more details see the pod documentation
 embedded in the file Zlib.pm.
 
+If you have downloaded this module in the expectation of manipulating the
+contents of .zip files, you will need to fetch and build the Archive::Zip
+module below as well.
+
+    http://www.cpan.org/modules/by-module/Archive/Archive-Zip-*.tar.gz
+
+
 PREREQUISITES
 -------------
 
@@ -25,10 +32,10 @@ installed on your system:
 
     * Perl 5.004 or better. 
     * Info-zip zlib 1.0.2 or better (note that this module is NOT
-      compatable with versions of zlib <= 1.0.1).
+      compatible with versions of zlib <= 1.0.1).
 
       The zlib compression library is available at
-      http://www.cdrom.com/pub/infozip/zlib/
+      http://www.info-zip.org/pub/infozip/zlib/
 
 
 When building Compress::Zlib, you can optionally build the zlib
@@ -37,7 +44,7 @@ seems to be the most straightforward option.
 
 If you want Compress::Zlib to build zlib, fetch a copy of the zlib
 distribution from the site mentioned above and unpack it into the
-Compress::ZLib source directory. If you have fetched zlib 1.1.3, it will
+Compress::Zlib source directory. If you have fetched zlib 1.1.3, it will
 create a directory called zlib-1.1.3.
 
 Now, whether you are building zlib or not, edit the file config.in
@@ -56,7 +63,7 @@ using this sequence of commands:
 INSTALLATION
 ------------
 
-To install Compress::ZLib, run the command below:
+To install Compress::Zlib, run the command below:
 
     make install
 
@@ -112,7 +119,7 @@ CHANGES
 	Fixed bug in gzreadline - previously it would keep returning
 	the same buffer. This bug was reported by Helmut Jarausch
 
-	Removed dependancy to zutil.h and so dropped support for 
+	Removed dependency to zutil.h and so dropped support for 
 	
 	    DEF_MEM_LEVEL (use MAX_MEM_LEVEL instead)
 	    DEF_WBITS     (use MAX_WBITS instead)
@@ -209,7 +216,7 @@ CHANGES
       * Added a note about the undocumented features in zlib that are
         required when accessing zip files.
 
-      * gzclose will now get called automaticallly when the gzip object is
+      * gzclose will now get called automatically when the gzip object is
         destroyed.
 
   1.07 - 27 Nov 1999
@@ -226,8 +233,26 @@ CHANGES
         This bug was spotted by Deven T. Corzine.
  
       * If a variable that only ever contained a number was given
-        to compress or delate, it would not be compresed properly. Now
+        to compress or deflate, it would not be compressed properly. Now
         it will be coerced to a string and then compressed. This bug
         was spotted by Deven T. Corzine.
+
+  1.09 - 15th January 2001
+
+      * Silenced a few compiler warnings.
+
+      * Updated zlib home site in README & Zlib.pm to www.info-zip.org
+
+      * Minor typo in Zlib.pm - a link used AUTHORS instead of AUTHOR
+        -- spotted by Frank Martini.
+
+      * Mention Archive::Zip
+
+      * added memGunzip. This is largely based on code provided by Jim Leonard.
+
+      * $deflate->flush can now take an optional parameter. Valid
+        values are Z_NO_FLUSH, Z_PARTIAL_FLUSH, Z_SYNC_FLUSH, Z_FULL_FLUSH
+        and Z_FINISH. The default is Z_FINISH.
+
 
 Paul Marquess <Paul.Marquess@btinternet.com>
