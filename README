@@ -1,10 +1,10 @@
                                  Compress::Zlib
 
-                                  Version 1.19
+                                  Version 1.20
 
-                                31 October 2002
+                                  4 April 2003
 
-             Copyright (c) 1995-2002 Paul Marquess. All rights reserved.
+             Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
             This program is free software; you can redistribute it and/or
                 modify it under the same terms as Perl itself.
 
@@ -30,6 +30,8 @@ PREREQUISITES
 Before you can build Compress::Zlib you need to have the following
 installed on your system:
 
+    * A C compiler
+
     * Perl 5.004 or better. 
 
     * The zlib compression library, version 1.0.2 or better 
@@ -42,7 +44,8 @@ installed on your system:
 
 When building Compress::Zlib, you can optionally build the zlib
 library at the same time. If you are running Windows 95/98/NT, this
-seems to be the most straightforward option.
+seems to be the most straightforward option. If you don't have access
+to a C compiler see the Win32 Notes section.
 
 If you want Compress::Zlib to build zlib, fetch a copy of the zlib
 distribution from the site mentioned above and unpack it into the
@@ -114,8 +117,8 @@ Run the command below to see if this is indeed the case
 
 Try removing the one you don't want to use and rebuild.   
 
-HP-UX
------
+HP-UX Notes
+-----------
 
 I've had a report that when building Compress::Zlib under HP-UX that it is
 necessary to have first built the zlib library with the -fpic option.
@@ -137,6 +140,33 @@ make: *** [Zlib.o] Error 1
 This usually means that you have not installed the development RPM
 for zlib. Check for an RPM that start with "zlib-devel" in your Linux
 distribution.
+
+
+Win32 Notes
+-----------
+
+If you are running Activestate Perl (from http://www.activestate.com),
+it ships with a pre-compiled version of Compress::Zlib. To check if a
+newer version of Compress::Zlib is available run this from the command
+prompt
+
+    C:\> ppm verify -upgrade Compress-Zlib
+
+
+If you are not running Activestate Perl and you don't have access
+to a C compiler, you will not be able to build and install this module.
+
+
+Win32 & Cygwin Notes
+--------------------
+
+It is not possible to install Compress::Zlib using the CPAN shell.
+This is because the Compress::Zlib DLL is itself used by the CPAN shell
+and it is impossible to remove a DLL while it is already loaded under
+Windows.
+
+The workaround is to install Compress::Zlib manually using the
+instructions given at the start of this file.
 
 
 FEEDBACK
@@ -185,4 +215,4 @@ To help me help you, I need all of the following information:
         make test TEST_VERBOSE=1          
 
 
-Paul Marquess <Paul.Marquess@btinternet.com>
+Paul Marquess <pmqs@cpan.org>

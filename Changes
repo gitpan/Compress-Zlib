@@ -1,6 +1,15 @@
 CHANGES
 -------
 
+  1.20 - 4 April 2003
+
+      * Fixed bug in gzopen where $gzerrno wasn't being set correctly.
+        The symptom was $gzerrno was set to Z_MEM_ERROR although the file 
+	was opened ok. If gzopen failed, $gzerrno was being set correctly.
+	This problem wasn't spotted before because the typical test
+	to determine whether gzopen passed or failed was to check its
+	return value. 
+
   1.19 - 31 October 2002
 
       * fixed a problem with t/02zlib.t that was failing with redhat 8.

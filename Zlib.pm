@@ -1,9 +1,9 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 31 October 2002
-# Version : 1.19
+# Created : 4 April 2003
+# Version : 1.20
 #
-#     Copyright (c) 1995-2002 Paul Marquess. All rights reserved.
+#     Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
 #     modify it under the same terms as Perl itself.
 #
@@ -22,7 +22,7 @@ local ($^W) = 1; #use warnings ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 use vars qw($deflateDefault $deflateParamsDefault $inflateDefault);
 
-$VERSION = "1.19" ;
+$VERSION = "1.20" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -943,7 +943,7 @@ Change settings for the deflate stream C<$gz>.
 The list of the valid options is shown below. Options not specified
 will remain unchanged.
 
-Note: This methos os only available if you are running zlib 1.0.6 or better.
+Note: This method is only available if you are running zlib 1.0.6 or better.
 
 =over 5
 
@@ -1151,7 +1151,7 @@ of I<Compress::Zlib>.
 =head1 AUTHOR
 
 The I<Compress::Zlib> module was written by Paul Marquess,
-F<Paul.Marquess@btinternet.com>. The latest copy of the module can be
+F<pmqs@cpan.org>. The latest copy of the module can be
 found on CPAN in F<modules/by-module/Compress/Compress-Zlib-x.x.tar.gz>.
 
 The primary site for the I<zlib> compression library is

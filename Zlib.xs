@@ -1,9 +1,9 @@
 /* Filename: Zlib.xs
- * Author  : Paul Marquess, <Paul.Marquess@btinternet.com>
- * Created : 31 October 2002
- * Version : 1.19
+ * Author  : Paul Marquess, <pmqs@cpan.org>
+ * Created : 4 April 2003
+ * Version : 1.20
  *
- *   Copyright (c) 1995-2002 Paul Marquess. All rights reserved.
+ *   Copyright (c) 1995-2003 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
  *   modify it under the same terms as Perl itself.
  *
@@ -359,7 +359,6 @@ gzopen_(path, mode)
 	CODE:
 	gzFile	gz ;
 	gz = gzopen(path, mode) ;
-	SetGzErrorNo(errno ? Z_ERRNO : Z_MEM_ERROR) ;
 	if (gz) {
 	    ZMALLOC(RETVAL, gzType) ;
     	    RETVAL->buffer = newSV(SIZE) ;
@@ -368,9 +367,12 @@ gzopen_(path, mode)
 	    RETVAL->offset = 0 ;
 	    RETVAL->gz = gz ;
 	    RETVAL->closed = FALSE ;
+	    SetGzErrorNo(0) ;
 	}
-	else
+	else {
 	    RETVAL = NULL ;
+	    SetGzErrorNo(errno ? Z_ERRNO : Z_MEM_ERROR) ;
+	}
 	OUTPUT:
 	  RETVAL
 
@@ -385,7 +387,6 @@ gzdopen_(fh, mode, offset)
         if (offset != -1)
             lseek(fh, offset, 0) ; 
         gz = gzdopen(fh, mode) ;
-        SetGzErrorNo(errno ? Z_ERRNO : Z_MEM_ERROR) ;
         if (gz) {
 	    ZMALLOC(RETVAL, gzType) ;
             RETVAL->buffer = newSV(SIZE) ;
@@ -394,9 +395,12 @@ gzdopen_(fh, mode, offset)
             RETVAL->offset = 0 ;
             RETVAL->gz = gz ;
 	    RETVAL->closed = FALSE ;
+	    SetGzErrorNo(0) ;
         }
-        else
+        else {
             RETVAL = NULL ;
+	    SetGzErrorNo(errno ? Z_ERRNO : Z_MEM_ERROR) ;
+	}
         OUTPUT:
           RETVAL
 

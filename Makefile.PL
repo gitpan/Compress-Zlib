@@ -20,10 +20,11 @@ WriteMakefile(
 	VERSION_FROM  	=> 'Zlib.pm',
 	INC      	=> "-I$ZLIB_INCLUDE" ,
 	DEFINE   	=> "$OLD_ZLIB" ,
-	XS	 	=> { 'Zlib.xs' => 'Zlib.c' },
-	'depend' 	=> { 'Makefile'	=> 'config.in' },
-	'clean' 	=> { FILES => 'constants.h constants.xs' },
-	'dist'	 	=> { COMPRESS=>'gzip', SUFFIX=>'gz',
+	XS	 	=> { 'Zlib.xs'    => 'Zlib.c' },
+	'depend' 	=> { 'Makefile'	  => 'config.in' },
+	'clean' 	=> { FILES        => 'constants.h constants.xs' },
+	'dist'	 	=> { COMPRESS     => 'gzip', 
+		             SUFFIX       => 'gz',
 			     DIST_DEFAULT => 'MyDoubleCheck Downgrade tardist',
 			    },
 	($BUILD_ZLIB
@@ -32,7 +33,7 @@ WriteMakefile(
 	),  
 	($] >= 5.005
 	    ? (ABSTRACT_FROM	=> 'Zlib.pm',
-	       AUTHOR  	=> 'Paul Marquess <Paul.Marquess@btinternet.com>')
+	       AUTHOR  => 'Paul Marquess <pmqs@cpan.org>')
 	    : ()
 	),
 	) ;
