@@ -583,6 +583,7 @@ EOM
 
     # write it to disk
     ok(139, open(FH, ">$name")) ;
+    binmode(FH);
     print FH $dest ;
     close FH ;
 
@@ -609,6 +610,7 @@ EOM
 
     # write it to disk
     ok(147, open(FH, ">$name")) ;
+    binmode(FH);
     print FH $dest ;
     close FH ;
 

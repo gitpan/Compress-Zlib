@@ -1,6 +1,10 @@
 CHANGES
 -------
 
+  1.19 - 31 October 2002
+
+      * fixed a problem with t/02zlib.t that was failing with redhat 8.
+
   1.18 - 24 October 2002
 
       * fixed a Win32 problem in t/02zlib.t by changing sysread to read.
