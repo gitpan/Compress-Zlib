@@ -1,8 +1,8 @@
                                  Compress::Zlib
 
-                                  Version 1.02
+                                  Version 1.03
 
-                                  31st Jan 1999
+                                  17th Mar 1999
 
              Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
          This program is free software; you can redistribute it and/or
@@ -157,5 +157,9 @@ CHANGES
 
       * Patched zlib.t for OS/2. Thanks to Ilya Zakharevich for the patch.
 
+  1.03 - 17 Mar 1999
+
+      * Updated to use the new PL_ symbols. 
+        Means the module can be built with Perl 5.005_5*
 
 Paul Marquess <Paul.Marquess@btinternet.com>

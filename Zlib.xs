@@ -1,7 +1,7 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <Paul.Marquess@btinternet.com>
- * Created : 22nd January 1996
- * Version : 1.01
+ * Created : 17th March 1999
+ * Version : 1.03
  *
  *   Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
@@ -24,6 +24,21 @@
 
 #include <zlib.h> 
 
+#ifndef PERL_VERSION
+#include "patchlevel.h"
+#define PERL_REVISION	5
+#define PERL_VERSION	PATCHLEVEL
+#define PERL_SUBVERSION	SUBVERSION
+#endif
+
+#if PERL_REVISION == 5 && (PERL_VERSION < 4 || (PERL_VERSION == 4 && PERL_SUBVERSION <= 75 ))
+
+#    define PL_sv_undef		sv_undef
+#    define PL_na		na
+#    define PL_curcop		curcop
+#    define PL_compiling	compiling
+
+#endif
 
 typedef struct di_stream {
     z_stream stream;
@@ -551,7 +566,7 @@ Zip_gzread(file, buf, len=4096)
 	voidp		bufp = NO_INIT
 	int		bufsize = 0 ;
 	CODE:
-	if (SvREADONLY(buf) && curcop != &compiling)
+	if (SvREADONLY(buf) && PL_curcop != &PL_compiling)
             croak("gzread: buffer parameter is read-only");
         if (!SvUPGRADE(buf, SVt_PV))
             croak("cannot use buf argument as lvalue");
@@ -596,7 +611,7 @@ gzreadline(file, buf)
 	Compress::Zlib::gzFile	file
 	SV *		buf
 	CODE:
-	if (SvREADONLY(buf) && curcop != &compiling) 
+	if (SvREADONLY(buf) && PL_curcop != &PL_compiling) 
             croak("gzreadline: buffer parameter is read-only"); 
         if (!SvUPGRADE(buf, SVt_PV))
             croak("cannot use buf argument as lvalue");
@@ -827,7 +842,7 @@ deflate (s, buf)
         SvCUR_set(output, outsize - s->stream.avail_out) ;
     }
     else
-        output = &sv_undef ;
+        output = &PL_sv_undef ;
     XPUSHs(output) ;
     if (GIMME == G_ARRAY) 
         XPUSHs(sv_2mortal(newSViv(err))) ;
@@ -885,7 +900,7 @@ flush(s)
         SvCUR_set(output, outsize - s->stream.avail_out) ;
     }
     else
-        output = &sv_undef ;
+        output = &PL_sv_undef ;
     XPUSHs(output) ;
     if (GIMME == G_ARRAY) 
         XPUSHs(sv_2mortal(newSViv(err))) ;
@@ -970,7 +985,7 @@ inflate (s, buf)
         *SvEND(buf) = '\0';
     }
     else
-        output = &sv_undef ;
+        output = &PL_sv_undef ;
     XPUSHs(output) ;
     if (GIMME == G_ARRAY) 
         XPUSHs(sv_2mortal(newSViv(err))) ;
