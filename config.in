@@ -26,7 +26,6 @@ BUILD_ZLIB	= False
 #    zlib source directory. A relative path is sufficient.
 
 INCLUDE 	= /usr/local/include
-#INCLUDE 	= ./zlib-1.1.3
 
 # 3. Where is libz?
 #
@@ -36,6 +35,5 @@ INCLUDE 	= /usr/local/include
 #    zlib source directory. A relative path is sufficient.
 
 LIB	= /usr/local/lib
-#LIB	= ./zlib-1.1.3
 
 # end of file config.in

@@ -3,6 +3,7 @@ MANIFEST
 Makefile.NT
 Makefile.PL
 README
+Changes
 Zlib.pm
 Zlib.xs
 config.in
@@ -13,6 +14,8 @@ examples/gzgrep
 examples/gzstream
 fallback.h
 fallback.xs
-t/examples.t
-t/zlib.t
+t/01version.t
+t/02zlib.t
+t/03examples.t
+t/04encoding.t
 typemap

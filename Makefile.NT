@@ -24,8 +24,10 @@ END
 sub MY::top_targets {
     my $top_targets =<<'END';
 all    ::    static
+	@$(NOOP)
 
 static ::    libz$(LIB_EXT)
+	@$(NOOP)
 
 config ::
 

@@ -1,9 +1,9 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 13 December 2001
-# Version : 1.16
+# Created : 22 October 2002
+# Version : 1.17
 #
-#     Copyright (c) 1995-2001 Paul Marquess. All rights reserved.
+#     Copyright (c) 1995-2002 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
 #     modify it under the same terms as Perl itself.
 #
@@ -22,7 +22,7 @@ local ($^W) = 1; #use warnings ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 use vars qw($deflateDefault $deflateParamsDefault $inflateDefault);
 
-$VERSION = "1.16" ;
+$VERSION = "1.17" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -117,7 +117,8 @@ sub gzopen
  
     if (isaFilehandle $file) {
 	IO::Handle::flush($file) ;
-        gzdopen_(fileno($file), $mode, tell($file)) 
+	my $offset = -f $file ? tell($file) : -1 ;
+        gzdopen_(fileno($file), $mode, $offset) ;
     }
     elsif (isaFilename $file) {
 	gzopen_($file, $mode) 
@@ -146,6 +147,9 @@ sub ParseParameters($@)
         %options = %{ $rest[0] } ;
     }
     elsif (@rest >= 2) {
+        my $count = @rest;
+        croak "$sub: Expected even number of parameters, got $count"
+            if @rest % 2 != 0 ;
         %options = @rest ;
     }
 
@@ -178,8 +182,9 @@ $deflateDefault = {
 	} ;
 
 $deflateParamsDefault = {
-	'Level'	     =>	Z_DEFAULT_COMPRESSION(),
-	'Strategy'   =>	Z_DEFAULT_STRATEGY(),
+	'Level'	     =>	undef,
+	'Strategy'   =>	undef,
+	'Bufsize'    =>	undef,
 	} ;
 
 $inflateDefault = {
@@ -192,6 +197,9 @@ $inflateDefault = {
 sub deflateInit
 {
     my ($got) = ParseParameters($deflateDefault, @_) ;
+    local ($^W) = 0; #no warnings;
+    croak "deflateInit: Bufsize must be >= 1, you specified $got->{Bufsize}"
+        unless $got->{Bufsize} >= 1;
     _deflateInit($got->{Level}, $got->{Method}, $got->{WindowBits}, 
 		$got->{MemLevel}, $got->{Strategy}, $got->{Bufsize},
 		$got->{Dictionary}) ;
@@ -201,11 +209,43 @@ sub deflateInit
 sub inflateInit
 {
     my ($got) = ParseParameters($inflateDefault, @_) ;
-    _inflateInit($got->{WindowBits}, $got->{Bufsize}, $got->{Dictionary}) ;
+    local ($^W) = 0; #no warnings;
+    croak "inflateInit: Bufsize must be >= 1, you specified $got->{Bufsize}"
+        unless $got->{Bufsize} >= 1;
+    _inflateInit($got->{WindowBits}, $got->{Bufsize}, $got->{Dictionary});
  
 }
 
-sub compress($)
+sub Compress::Zlib::deflateStream::deflateParams
+{
+    my $self = shift ;
+    my ($got) = ParseParameters($deflateParamsDefault, @_) ;
+    croak "deflateParams needs Level and/or Strategy"
+        unless defined $got->{Level} || defined $got->{Strategy};
+    local ($^W) = 0; #no warnings;
+    croak "deflateParams: Bufsize must be >= 1, you specified $got->{Bufsize}"
+        unless  !defined $got->{Bufsize} || $got->{Bufsize} >= 1;
+
+    my $flags = 0;
+    if (defined $got->{Level}) 
+      { $flags |= 1 }
+    else 
+      { $got->{Level} = 0 }
+
+    if (defined $got->{Strategy}) 
+      { $flags |= 2 }
+    else 
+      { $got->{Strategy} = 0 }
+
+    $got->{Bufsize} = 0 
+        if !defined $got->{Bufsize};
+
+    $self->_deflateParams($flags, $got->{Level}, $got->{Strategy}, 
+                          $got->{Bufsize});
+		
+}
+
+sub compress($;$)
 {
     my ($x, $output, $out, $err, $in) ;
 
@@ -217,7 +257,10 @@ sub compress($)
         $in = \$_[0] ;
     }
 
-    if ( (($x, $err) = deflateInit())[1] == Z_OK()) {
+    my $level = (@_ == 2 ? $_[1] : Z_DEFAULT_COMPRESSION() );
+
+
+    if ( (($x, $err) = deflateInit(Level => $level))[1] == Z_OK()) {
 
         ($output, $err) = $x->deflate($in) ;
         return undef unless $err == Z_OK() ;
@@ -298,7 +341,7 @@ sub memGzip
   $status == Z_OK()
       or return undef ;
  
-  push @m, pack("V V", crc32($string), length($$string)) ;
+  push @m, pack("V V", crc32($string), $x->total_in());
  
   return join "", @m;
 }
@@ -400,14 +443,22 @@ Compress::Zlib - Interface to zlib compression library
 
     ($d, $status) = deflateInit( [OPT] ) ;
     ($out, $status) = $d->deflate($buffer) ;
+    $status = $d->deflateParams([OPT]) ;
     ($out, $status) = $d->flush() ;
     $d->dict_adler() ;
+    $d->total_in() ;
+    $d->total_out() ;
+    $d->msg() ;
 
     ($i, $status) = inflateInit( [OPT] ) ;
     ($out, $status) = $i->inflate($buffer) ;
+    $status = $i->inflateSync($buffer) ;
     $i->dict_adler() ;
+    $i->total_in() ;
+    $i->total_out() ;
+    $i->msg() ;
 
-    $dest = compress($source) ;
+    $dest = compress($source, [$level]) ;
     $dest = uncompress($source) ;
 
     $gz = gzopen($filename or filehandle, $mode) ;
@@ -416,6 +467,8 @@ Compress::Zlib - Interface to zlib compression library
     $byteswritten = $gz->gzwrite($buffer) ;
     $status = $gz->gzflush($flush) ;
     $status = $gz->gzclose() ;
+    $status = $gz->gzeof() ;
+    $status = $gz->gzsetparams($level, $strategy) ;
     $errstring = $gz->gzerror() ; 
     $gzerrno
 
@@ -481,8 +534,9 @@ Here is a list of the valid options:
 
 =item B<-Level>
 
-Defines the compression level. Valid values are 1 through 9,
-C<Z_BEST_SPEED>, C<Z_BEST_COMPRESSION>, and C<Z_DEFAULT_COMPRESSION>.
+Defines the compression level. Valid values are 0 through 9,
+C<Z_NO_COMPRESSION>, C<Z_BEST_SPEED>, C<Z_BEST_COMPRESSION>, and
+C<Z_DEFAULT_COMPRESSION>.
 
 The default is C<-Level =E<gt>Z_DEFAULT_COMPRESSION>.
 
@@ -560,23 +614,59 @@ the fact that B<$out> is empty for an error test.
 
 =head2 B<($out, $status) = $d-E<gt>flush([flush_type])>
 
-Finishes the deflation. Any pending output will be returned via B<$out>.
+Typically used to finish the deflation. Any pending output will be
+returned via B<$out>.
 B<$status> will have a value C<Z_OK> if successful.
 
 In a scalar context B<flush> will return B<$out> only.
 
-Note that flushing can degrade the compression ratio, so it should only
-be used to terminate a decompression.
+Note that flushing can seriously degrade the compression ratio, so it
+should only be used to terminate a decompression (using C<Z_FINISH>) or
+when you want to create a I<full flush point> (using C<Z_FULL_FLUSH>).
 
 By default the C<flush_type> used is C<Z_FINISH>. Other valid values
-for C<flush_type> are Z_NO_FLUSH, Z_PARTIAL_FLUSH, Z_SYNC_FLUSH
-and Z_FULL_FLUSH. It is strongly recommended that you only set the
-C<flush_type> parameter if you fully understand what it does. See the
-C<zlib> documentation for details.
+for C<flush_type> are C<Z_NO_FLUSH>, C<Z_PARTIAL_FLUSH>, C<Z_SYNC_FLUSH>
+and C<Z_FULL_FLUSH>. It is strongly recommended that you only set the
+C<flush_type> parameter if you fully understand the implications of
+what it does. See the C<zlib> documentation for details.
+
+=head2 B<$status = $d-E<gt>deflateParams([OPT])>
+
+Change settings for the deflate stream C<$d>.
+
+The list of the valid options is shown below. Options not specified
+will remain unchanged.
+
+=over 5
+
+=item B<-Level>
+
+Defines the compression level. Valid values are 0 through 9,
+C<Z_NO_COMPRESSION>, C<Z_BEST_SPEED>, C<Z_BEST_COMPRESSION>, and
+C<Z_DEFAULT_COMPRESSION>.
+
+=item B<-Strategy>
+
+Defines the strategy used to tune the compression. The valid values are
+C<Z_DEFAULT_STRATEGY>, C<Z_FILTERED> and C<Z_HUFFMAN_ONLY>. 
+
+=back
 
 =head2 B<$d-E<gt>dict_adler()>
 
 Returns the adler32 value for the dictionary.
+
+=head2 B<$d-E<gt>msg()>
+
+Returns the last error message generated by zlib.
+
+=head2 B<$d-E<gt>total_in()>
+
+Returns the total number of bytes uncompressed bytes input to deflate.
+
+=head2 B<$d-E<gt>total_out()>
+
+Returns the total number of compressed bytes output from deflate.
 
 =head2 Example
 
@@ -691,9 +781,35 @@ buffer after the deflated data stream.
 This feature is useful when processing a file format that encapsulates
 a  compressed data stream (e.g. gzip, zip).
 
+=head2 B<$status = $i-E<gt>inflateSync($buffer)>
+
+Scans C<$buffer> until it reaches either a I<full flush point> or the
+end of the buffer.
+
+If a I<full flush point> is found, C<Z_OK> is returned and C<$buffer>
+will be have all data up to the flush point removed. This can then be
+passed to the C<deflate> method.
+
+Any other return code means that a flush point was not found. If more
+data is available, C<inflateSync> can be called repeatedly with more
+compressed data until the flush point is found.
+
+
 =head2 B<$i-E<gt>dict_adler()>
 
 Returns the adler32 value for the dictionary.
+
+=head2 B<$i-E<gt>msg()>
+
+Returns the last error message generated by zlib.
+
+=head2 B<$i-E<gt>total_in()>
+
+Returns the total number of bytes compressed bytes input to inflate.
+
+=head2 B<$i-E<gt>total_out()>
+
+Returns the total number of uncompressed bytes output from inflate.
 
 =head2 Example
 
@@ -733,12 +849,18 @@ provided which provide similar functionality.
 
 =over 5
 
-=item B<$dest = compress($source) ;>
+=item B<$dest = compress($source [, $level] ) ;>
 
 Compresses B<$source>. If successful it returns the
 compressed data. Otherwise it returns I<undef>.
 
 The source buffer can either be a scalar or a scalar reference.
+
+The B<$level> paramter defines the compression level. Valid values are
+0 through 9, C<Z_NO_COMPRESSION>, C<Z_BEST_SPEED>,
+C<Z_BEST_COMPRESSION>, and C<Z_DEFAULT_COMPRESSION>.
+If B<$level> is not specified C<Z_DEFAULT_COMPRESSION> will be used.
+
 
 =item B<$dest = uncompress($source) ;>
 
@@ -813,6 +935,28 @@ Refer to the I<zlib> documentation for the valid values of B<$flush>.
 
 Closes the compressed file. Any pending data is flushed to the file
 before it is closed.
+
+=item B<$gz-E<gt>gzsetparams($level, $strategy>
+
+Change settings for the deflate stream C<$gz>.
+
+The list of the valid options is shown below. Options not specified
+will remain unchanged.
+
+=over 5
+
+=item B<$level>
+
+Defines the compression level. Valid values are 0 through 9,
+C<Z_NO_COMPRESSION>, C<Z_BEST_SPEED>, C<Z_BEST_COMPRESSION>, and
+C<Z_DEFAULT_COMPRESSION>.
+
+=item B<$strategy>
+
+Defines the strategy used to tune the compression. The valid values are
+C<Z_DEFAULT_STRATEGY>, C<Z_FILTERED> and C<Z_HUFFMAN_ONLY>. 
+
+=back
 
 =item B<$gz-E<gt>gzerror>
 
@@ -1013,4 +1157,4 @@ F<http://www.gzip.org/zlib/>.
 
 =head1 MODIFICATION HISTORY
 
-See the README file.
+See the Changes file.

@@ -112,7 +112,8 @@ else {
       or die "Can't copy fallback.xs to constants.xs: $!";
 }
 
-sub MY::postamble {
+sub MY::postamble 
+{
     my $postamble = '
 
 Downgrade:
@@ -141,21 +142,52 @@ Zlib.xs:	typemap
 ' ;
 
     if ($BUILD_ZLIB) {
-        $postamble .=<<END ;
-\$(MYEXTLIB): $ZLIB_LIB/Makefile
-END
-        $postamble .=<<END unless $^O eq 'MSWin32';
-	DEFINE='\$(DEFINE)'; export DEFINE INC; \\
-END
+        my $CD_ZLIB_LIB = $ZLIB_LIB;
+        $CD_ZLIB_LIB =~ s#/#\\#g if $^O =~ /MSWin32/ ;
 
-        $postamble .= ($^O eq 'MSWin32') ? <<END1 : <<END2;
-	cd $ZLIB_LIB && \$(MAKE) all DEFINE=\$(DEFINE)
-END1
-	cd $ZLIB_LIB && \$(MAKE) -e all
-END2
+        if ($^O =~ /MSWin32/ && Win32::IsWin95()) {
+	    if ($Config{'make'} =~ /dmake/i) {
+	        # dmake-specific
+	        $postamble .= <<"EOT";
+\$(MYEXTLIB): $ZLIB_LIB/Makefile
+\@[
+	cd $CD_ZLIB_LIB
+	\$(MAKE) static
+	cd ..
+]
+EOT
+	    } 
+            elsif ($Config{'make'} =~ /nmake/i) {
+	        #
+	        $postamble .= <<"EOT";
+\$(MYEXTLIB): $ZLIB_LIB/Makefile
+	cd $CD_ZLIB_LIB
+	\$(MAKE) static
+	cd ..
+EOT
+	    } 
+        } 
+        elsif ($^O ne 'VMS') {
+            $postamble .= <<"EOT";
+
+\$(MYEXTLIB): $ZLIB_LIB/Makefile
+	cd $CD_ZLIB_LIB && \$(MAKE) static
+EOT
+        }
+        else {
+             $postamble .= <<"EOT";
+
+\$(MYEXTLIB) : ${ZLIB_LIB}descrip.mms
+	set def $ZLIB_LIB
+    $(MMS) static
+    set def [-]
+EOT
+        }
+
     }
 
-    $postamble;
+    return $postamble;
+
 }
 
 sub ParseCONFIG
@@ -213,7 +245,7 @@ sub ParseCONFIG
 	   unless -e "$ZLIB_LIB/zlib.h" ;
 
 
-	# check Makefile.NT has been copied to ZLIB_DIR
+	# check Makefile.NT has been copied to ZLIB_LIB
 	if (! -e "$ZLIB_LIB/Makefile.PL") {
 	    copy 'Makefile.NT', "$ZLIB_LIB/Makefile.PL" ||
 	       die "Could not copy Makefile.NT to $ZLIB_LIB/Makefile.PL: $!\n" ;
