@@ -1,17 +1,13 @@
                                  Compress::Zlib
 
-                                  Version 0.50
+                                  Version 1.00
 
-                                  19th Feb 1996
+                                  14th Nov 1997
 
-             Copyright (c) 1995/6 Paul Marquess. All rights reserved.
+             Copyright (c) 1995/6/7 Paul Marquess. All rights reserved.
          This program is free software; you can redistribute it and/or
                 modify it under the same terms as Perl itself.
 
-                                    WARNING
-                              THIS IS ALPHA CODE.
-                        Please take care when using it.
-                          Please report any problems.
 
 
 DESCRIPTION
@@ -108,5 +104,40 @@ CHANGES
 
 	Added gzstream example script.
  
+  1.00 - Fixed crc32 & adler32. They were very broken. 
+
+      * The following functions can now take a scalar reference in
+	place of a scalar for their buffer parameters:
+
+    	    compress
+    	    uncompress
+    	    deflate
+    	    inflate
+    	    crc32
+    	    adler32
+ 
+	This should mean applications that make use of the module don't
+	have to copy large buffers around.
+
+ 
+      * Normally the inflate method consumes I<all> of the input buffer
+	before returning. The exception to this is when inflate detects
+	the end of the stream (Z_STREAM_END). In this case the input
+	buffer need not be completely consumed. To allow processing of
+	file formats that embed a deflation stream (e.g. zip, gzip),
+	the inflate method now sets the buffer parameter to be what
+	remains after inflation.
+
+	When the return status is Z_STREAM_END, it will be what remains
+	of the buffer (if any) after deflation. When the status is Z_OK
+	it will be an empty string.
+
+	This change means that the buffer parameter must be a lvalue.
+ 
+      * Fixed crc32 and adler32. They were both very broken.
+
+      * Added the Compress::Zlib::memGzip function.
+
+
 Paul Marquess <pmarquess@bfsec.bt.co.uk>
 

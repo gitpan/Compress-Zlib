@@ -1,9 +1,9 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
 # Created : 8th July 1996
-# Version : 0.50
+# Version : 1.00
 #
-#     Copyright (c) 1995, 1996 Paul Marquess. All rights reserved.
+#     Copyright (c) 1995, 1996, 1997 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
 #     modify it under the same terms as Perl itself.
 #
@@ -70,7 +70,7 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD
 );
 
 
-$VERSION = "0.50" ;
+$VERSION = "1.00" ;
 
 
 sub AUTOLOAD {
@@ -210,11 +210,19 @@ sub inflateInit
 
 sub compress($)
 {
-    my ($x, $output, $out, $err) ;
+    my ($x, $output, $out, $err, $in) ;
+
+    if (ref $_[0] ) {
+        $in = $_[0] ;
+	croak "not a scalar reference" unless ref $in eq 'SCALAR' ;
+    }
+    else {
+        $in = \$_[0] ;
+    }
 
     if ( (($x, $err) = deflateInit())[1] == Z_OK()) {
 
-        ($output, $err) = $x->deflate($_[0]) ;
+        ($output, $err) = $x->deflate($in) ;
         return undef unless $err == Z_OK() ;
 
         ($out, $err) = $x->flush() ;
@@ -230,11 +238,19 @@ sub compress($)
 
 sub uncompress($)
 {
-    my ($x, $output, $err) ;
+    my ($x, $output, $err, $in) ;
+
+    if (ref $_[0] ) {
+        $in = $_[0] ;
+	croak "not a scalar reference" unless ref $in eq 'SCALAR' ;
+    }
+    else {
+        $in = \$_[0] ;
+    }
 
     if ( (($x, $err) = inflateInit())[1] == Z_OK())  {
  
-        ($output, $err) = $x->inflate($_[0]) ;
+        ($output, $err) = $x->inflate($in) ;
         return undef unless $err == Z_STREAM_END() ;
  
 	return $output ;
@@ -242,6 +258,42 @@ sub uncompress($)
  
     return undef ;
 }
+
+
+sub MAGIC1() { 0x1f }
+sub MAGIC2() { 0x8b }
+sub OSCODE() { 3    }
+
+sub memGzip
+{
+  my $x = deflateInit(
+                      -Level         => Z_BEST_COMPRESSION(),
+                      -WindowBits     =>  - MAX_WBITS(),
+                     )
+      or return undef ;
+ 
+  # write a minimal gzip header
+  my(@m);
+  push @m, pack("c10", MAGIC1, MAGIC2, Z_DEFLATED(), 0,0,0,0,0,0, OSCODE) ;
+ 
+  # if the deflation buffer isn't a reference, make it one
+  my $string = (ref $_[0] ? $_[0] : \$_[0]) ;
+
+  my ($output, $status) = $x->deflate($string) ;
+  push @m, $output ;
+  $status == Z_OK()
+      or return undef ;
+ 
+  ($output, $status) = $x->flush() ;
+  push @m, $output ;
+  $status == Z_OK()
+      or return undef ;
+ 
+  push @m, pack("V V", crc32($string), length($$string)) ;
+ 
+  return join "", @m;
+}
+
 
 1 ;
 # Autoload methods go after __END__, and are processed by the autosplit program.
@@ -281,6 +333,8 @@ Compress::Zlib - Interface to zlib compression library
     $errstring = $gz->gzerror() ; 
     $gzerrno
 
+    $dest = Compress::Zlib::memGzip($buffer) ;
+
     $crc = adler32($buffer [,$crc]) ;
     $crc = crc32($buffer [,$crc]) ;
 
@@ -296,9 +350,6 @@ in I<Compress::Zlib>.
 The module can be split into two general areas of functionality, namely
 in-memory compression/decompression and read/write access to I<gzip>
 files. Each of these areas will be discussed separately below.
-
-B<WARNING: The interface defined in this document is alpha and is
-liable to change.>
 
 =head1 DEFLATE 
 
@@ -404,7 +455,8 @@ options will take their default values.
 =head2 B<($out, $status) = $d-E<gt>deflate($buffer)>
 
 
-Deflates the contents of B<$buffer>. When finished, B<$buffer> will be
+Deflates the contents of B<$buffer>. The buffer can either be a scalar
+or a scalar reference.  When finished, B<$buffer> will be
 completely processed (assuming there were no errors). If the deflation
 was successful it returns the deflated output, B<$out>, and a status
 value, B<$status>, of C<Z_OK>.
@@ -523,10 +575,21 @@ override the default buffer size.
 
 =head2 B<($out, $status) = $i-E<gt>inflate($buffer)>
 
-Inflates the complete contents of B<$buffer> 
+Inflates the complete contents of B<$buffer>. The buffer can either be
+a scalar or a scalar reference.
 
 Returns C<Z_OK> if successful and C<Z_STREAM_END> if the end of the
-compressed data has been reached.
+compressed data has been reached. 
+
+The C<$buffer> parameter is modified by C<inflate>. On completion it
+will contain what remains of the input buffer after inflation. This
+means that C<$buffer> will be an empty string when the return status is
+C<Z_OK>. When the return status is C<Z_STREAM_END> the C<$buffer>
+parameter will contains what (if anything) was stored in the input
+buffer after the deflated data stream.
+
+This feature is needed when processing a file format that encapsulates
+a  deflated data stream (e.g. gzip, zip).
 
 =head2 B<$i-E<gt>dict_adler()>
 
@@ -544,7 +607,7 @@ Here is an example of using B<inflate>.
 
     while (read(STDIN, $input, 4096))
     {
-        ($output, $status) = $x->inflate($input) ;
+        ($output, $status) = $x->inflate(\$input) ;
 
         print $output 
             if $status == Z_OK or $status == Z_STREAM_END ;
@@ -568,10 +631,14 @@ provided which provide similar functionality.
 Compresses B<$source>. If successful it returns the
 compressed data. Otherwise it returns I<undef>.
 
+The source buffer can either be a scalar or a scalar reference.
+
 =item B<$dest = uncompress($source) ;>
 
 Uncompresses B<$source>. If successful it returns the uncompressed
 data. Otherwise it returns I<undef>.
+
+The source buffer can either be a scalar or a scalar reference.
 
 =back
 
@@ -733,6 +800,18 @@ output.
 
     $gz->gzclose ;
 
+=head2 Compress::Zlib::memGzip
+
+This function is used to create an in-memory gzip file. 
+It creates a minimal gzip header.
+
+    $dest = Compress::Zlib::memGzip($buffer) ;
+
+If successful, it returns the in-memory gzip file, otherwise it returns
+undef.
+
+The buffer parameter can either be a scalar or a scalar reference.
+
 =head1 CHECKSUM FUNCTIONS
 
 Two functions are provided by I<zlib> to calculate a checksum. For the
@@ -742,6 +821,10 @@ calculations to be done.
 
     $crc = adler32($buffer [,$crc]) ;
     $crc = crc32($buffer [,$crc]) ;
+
+The buffer parameters can either be a scalar or a scalar reference.
+
+If the $crc parameters is C<undef>, the crc value will be reset.
 
 =head1 CONSTANTS
 
@@ -836,3 +919,46 @@ Added gzstream example script.
 
 =back
 
+=head2 1.00 14 Nov 1997
+
+=over 5
+
+=item 1.
+
+The following functions can now take a scalar reference in place of a
+scalar for their buffer parameters:
+
+    compress
+    uncompress
+    deflate
+    inflate
+    crc32
+    adler32
+
+This should mean applications that make use of the module don't have to
+copy large buffers around.
+
+=item 2.
+
+Normally the inflate method consumes I<all> of the input buffer before
+returning. The exception to this is when inflate detects the end of the
+stream (Z_STREAM_END). In this case the input buffer need not be
+completely consumed. To allow processing of file formats that embed a
+deflation stream (e.g. zip, gzip), the inflate method now sets the
+buffer parameter to be what remains after inflation.
+
+When the return status is Z_STREAM_END, it will be what remains of the
+buffer (if any) after deflation. When the status is Z_OK it will be an
+empty string.
+
+This change means that the buffer parameter must be a lvalue.
+
+=item 3.
+
+Fixed crc32 and adler32. They were both very broken. 
+
+=item 4,
+
+Added the Compress::Zlib::memGzip function.
+
+=back

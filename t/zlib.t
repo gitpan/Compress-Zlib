@@ -20,7 +20,7 @@ EOM
 
 $len   = length $hello ;
 
-print "1..96\n" ;
+print "1..119\n" ;
 
 # Check zlib_version and ZLIB_VERSION are the same.
 ok(1, Compress::Zlib::zlib_version eq ZLIB_VERSION) ;
@@ -221,7 +221,7 @@ unlink $name ;
  
   ok(58, ! $fil->gzclose ) ;
  
-  unlink $name ;
+  unlink $filename ;
  
   ok(59, $hello eq $uncomp) ;
 
@@ -256,7 +256,7 @@ unlink $name ;
  
   ok(68, ! $fil->gzclose ) ;
  
-  unlink $name ;
+  unlink $filename ;
  
   ok(69, $hello eq $uncomp) ;
  
@@ -286,6 +286,14 @@ $uncompr = uncompress ($compr) ;
 
 ok(73, $contents eq $uncompr) ;
 
+# buffer reference
+
+$compr = compress(\$hello) ;
+ok(74, $compr ne "") ;
+
+
+$uncompr = uncompress (\$compr) ;
+ok(75, $hello eq $uncompr) ;
 
 # deflate/inflate - small buffer
 # ==============================
@@ -293,9 +301,9 @@ ok(73, $contents eq $uncompr) ;
 $hello = "I am a HAL 9000 computer" ;
 @hello = split('', $hello) ;
  
-ok(74,  ($x, $err) = deflateInit( {-Bufsize => 1} ) ) ;
-ok(75, $x) ;
-ok(76, $err == Z_OK) ;
+ok(76,  ($x, $err) = deflateInit( {-Bufsize => 1} ) ) ;
+ok(77, $x) ;
+ok(78, $err == Z_OK) ;
  
 $Answer = '';
 foreach (@hello)
@@ -306,17 +314,17 @@ foreach (@hello)
     $Answer .= $X ;
 }
  
-ok(77, $status == Z_OK) ;
+ok(79, $status == Z_OK) ;
 
-ok(78,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
+ok(80,    (($X, $status) = $x->flush())[1] == Z_OK ) ;
 $Answer .= $X ;
  
  
 @Answer = split('', $Answer) ;
  
-ok(79, ($k, $err) = inflateInit( {-Bufsize => 1}) ) ;
-ok(80, $k) ;
-ok(81, $err == Z_OK) ;
+ok(81, ($k, $err) = inflateInit( {-Bufsize => 1}) ) ;
+ok(82, $k) ;
+ok(83, $err == Z_OK) ;
  
 $GOT = '';
 foreach (@Answer)
@@ -327,8 +335,8 @@ foreach (@Answer)
  
 }
  
-ok(82, $status == Z_STREAM_END) ;
-ok(83, $GOT eq $hello ) ;
+ok(84, $status == Z_STREAM_END) ;
+ok(85, $GOT eq $hello ) ;
 
 
  
@@ -336,47 +344,47 @@ ok(83, $GOT eq $hello ) ;
 # ==============================
 
 
-ok(84, $x = deflateInit() ) ;
+ok(86, $x = deflateInit() ) ;
  
-ok(85, (($X, $status) = $x->deflate($contents))[1] == Z_OK) ;
+ok(87, (($X, $status) = $x->deflate($contents))[1] == Z_OK) ;
 
 $Y = $X ;
  
  
-ok(86, (($X, $status) = $x->flush() )[1] == Z_OK ) ;
+ok(88, (($X, $status) = $x->flush() )[1] == Z_OK ) ;
 $Y .= $X ;
  
  
  
-ok(87, $k = inflateInit() ) ;
+ok(89, $k = inflateInit() ) ;
  
 ($Z, $status) = $k->inflate($Y) ;
  
-ok(88, $status == Z_STREAM_END) ;
-ok(89, $contents eq $Z ) ;
+ok(90, $status == Z_STREAM_END) ;
+ok(91, $contents eq $Z ) ;
 
 # deflate/inflate - preset dictionary
 # ===================================
 
 $dictionary = "hello" ;
-ok(90, $x = deflateInit({-Level => Z_BEST_COMPRESSION,
+ok(92, $x = deflateInit({-Level => Z_BEST_COMPRESSION,
 			 -Dictionary => $dictionary})) ;
  
 $dictID = $x->dict_adler() ;
 
 ($X, $status) = $x->deflate($hello) ;
-ok(91, $status == Z_OK) ;
+ok(93, $status == Z_OK) ;
 ($Y, $status) = $x->flush() ;
-ok(92, $status == Z_OK) ;
+ok(94, $status == Z_OK) ;
 $X .= $Y ;
 $x = 0 ;
  
-ok(93, $k = inflateInit(-Dictionary => $dictionary) ) ;
+ok(95, $k = inflateInit(-Dictionary => $dictionary) ) ;
  
 ($Z, $status) = $k->inflate($X);
-ok(94, $status == Z_STREAM_END) ;
-ok(95, $k->dict_adler() == $dictID);
-ok(96, $hello eq $Z ) ;
+ok(96, $status == Z_STREAM_END) ;
+ok(97, $k->dict_adler() == $dictID);
+ok(98, $hello eq $Z ) ;
 
 ##ok(76, $k->inflateSetDictionary($dictionary) == Z_OK);
 # 
@@ -395,3 +403,88 @@ ok(96, $hello eq $Z ) ;
 #
 #
 #
+
+
+# inflate - check remaining buffer after Z_STREAM_END
+# ===================================================
+ 
+{
+    ok(99, $x = deflateInit(-Level => Z_BEST_COMPRESSION )) ;
+ 
+    ($X, $status) = $x->deflate($hello) ;
+    ok(100, $status == Z_OK) ;
+    ($Y, $status) = $x->flush() ;
+    ok(101, $status == Z_OK) ;
+    $X .= $Y ;
+    $x = 0 ;
+ 
+    ok(102, $k = inflateInit() ) ;
+ 
+    my $first = substr($X, 0, 2) ;
+    my $last  = substr($X, 2) ;
+    ($Z, $status) = $k->inflate($first);
+    ok(103, $status == Z_OK) ;
+    ok(104, $first eq "") ;
+
+    $last .= "appendage" ;
+    ($T, $status) = $k->inflate($last);
+    ok(105, $status == Z_STREAM_END) ;
+    ok(106, $hello eq $Z . $T ) ;
+    ok(107, $last eq "appendage") ;
+
+}
+
+# minGzip
+{
+    my $name = "test.gz" ;
+    my $buffer = <<EOM;
+some sample 
+text
+
+EOM
+
+    my $len = length $buffer ;
+    my ($x, $uncomp) ;
+
+
+    # create an in-memory gzip file
+    my $dest = Compress::Zlib::memGzip($buffer) ;
+    ok(108, length $dest) ;
+
+    # write it to disk
+    ok(109, open(FH, ">$name")) ;
+    print FH $dest ;
+    close FH ;
+
+    # uncompress with gzopen
+    ok(110, my $fil = gzopen($name, "rb") ) ;
+ 
+    ok(111, ($x = $fil->gzread($uncomp)) == $len) ;
+ 
+    ok(112, ! $fil->gzclose ) ;
+
+    ok(113, $uncomp eq $buffer) ;
+ 
+    unlink $name ;
+ 
+    # now do the same but use a reference 
+
+    $dest = Compress::Zlib::memGzip(\$buffer) ; 
+    ok(114, length $dest) ;
+
+    # write it to disk
+    ok(115, open(FH, ">$name")) ;
+    print FH $dest ;
+    close FH ;
+
+    # uncompress with gzopen
+    ok(116, $fil = gzopen($name, "rb") ) ;
+ 
+    ok(117, ($x = $fil->gzread($uncomp)) == $len) ;
+ 
+    ok(118, ! $fil->gzclose ) ;
+
+    ok(119, $uncomp eq $buffer) ;
+ 
+    unlink $name ;
+}

@@ -1,9 +1,9 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <pmarquess@bfsec.bt.co.uk>
  * Created : 22nd January 1996
- * Version : 0.50
+ * Version : 1.00
  *
- *   Copyright (c) 1995, 1996 Paul Marquess. All rights reserved.
+ *   Copyright (c) 1995, 1996, 1997 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
  *   modify it under the same terms as Perl itself.
  *
@@ -181,7 +181,25 @@ gzreadline(file, output)
     }
 }
 
+static SV* 
+deRef(sv, string)
+SV * sv ;
+char * string;
+{
+    if (SvROK(sv)) {
+	sv = SvRV(sv) ;
+	switch(SvTYPE(sv)) {
+            case SVt_PVAV:
+            case SVt_PVHV:
+            case SVt_PVCV:
+                croak("%s: buffer parameter is not a SCALAR reference", string);
+	}
+	if (SvROK(sv))
+	    croak("%s: buffer parameter is a reference to a reference", string) ;
+    }
 
+    return sv ;
+}
 
 static int
 not_here(s)
@@ -649,16 +667,39 @@ BOOT:
 
 uLong
 Zip_adler32(buf, adler=adlerInitial)
-        uLong   adler
-        uint    len = NO_INIT
-        Bytef *  buf = (Byte*)SvPV(ST(1), len) ;
+        uLong   adler = NO_INIT
+        uInt    len = NO_INIT
+        Bytef *  buf = NO_INIT
+	SV *	 sv = ST(0) ;
+	INIT:
+    	/* If the buffer is a reference, dereference it */
+	sv = deRef(sv, "adler32") ;
+	buf = (Byte*)SvPV(sv, len) ;
+
+	if (items < 2)
+	  adler = adlerInitial ;
+	else if (SvOK(ST(1)))
+	  adler = SvUV(ST(1)) ;
+	else
+	  adler = crcInitial ; 
  
 uLong
 Zip_crc32(buf, crc=crcInitial)
-        uLong   crc
-        uint     len = NO_INIT
-        Bytef *  buf = (Byte*)SvPV(ST(1), len) ;
+        uLong   crc = NO_INIT
+        uInt     len = NO_INIT
+        Bytef *  buf = NO_INIT
+	SV *	 sv = ST(0) ;
+	INIT:
+    	/* If the buffer is a reference, dereference it */
+	sv = deRef(sv, "crc32") ;
+	buf = (Byte*)SvPV(sv, len) ;
 
+	if (items < 2)
+	  crc = crcInitial ;
+	else if (SvOK(ST(1)))
+	  crc = SvUV(ST(1)) ;
+	else
+	  crc = crcInitial ; 
 
 MODULE = Compress::Zlib PACKAGE = Compress::Zlib
 
@@ -750,6 +791,9 @@ deflate (s, buf)
     int		err = NO_INIT
   PPCODE:
   
+    /* If the buffer is a reference, dereference it */
+    buf = deRef(buf, "deflate") ;
+ 
     /* initialise the input buffer */
     s->stream.next_in = (Bytef*)SvPVX(buf) ;
     s->stream.avail_in = SvCUR(buf) ;
@@ -873,10 +917,14 @@ inflate (s, buf)
     SV * 	output = NO_INIT
     int		err = Z_OK ;
   PPCODE:
+  
+    /* If the buffer is a reference, dereference it */
+    buf = deRef(buf, "inflate") ;
+    
     /* initialise the input buffer */
     s->stream.next_in = (Bytef*)SvPVX(buf) ;
     s->stream.avail_in = SvCUR(buf) ;
-
+	
     /* and the output buffer */
     /* output = sv_2mortal(newSVpv("", s->bufsize+1)) ; */
     output = sv_2mortal(newSV(s->bufsize+1)) ;
@@ -906,9 +954,18 @@ inflate (s, buf)
     }
 
     if (err == Z_OK || err == Z_STREAM_END) {
+	unsigned in ;
+	
         SvPOK_only(output);
         SvCUR_set(output, outsize - s->stream.avail_out) ;
         *SvEND(output) = '\0';
+	
+	/* fix the input buffer */
+	in = s->stream.avail_in ;
+	SvCUR_set(buf, in) ;
+	if (in)
+	    Move(s->stream.next_in, SvPVX(buf), in, char) ;	
+        *SvEND(buf) = '\0';
     }
     else
         output = &sv_undef ;

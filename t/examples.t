@@ -18,6 +18,7 @@ sub writeFile
     my($filename, @strings) = @_ ;
     open (F, ">$filename") 
         or die "Cannot open $filename: $!\n" ;
+    binmode(F) if $^O eq 'MSWin32';
     foreach (@strings)
       { print F }
     close F ;
@@ -30,6 +31,7 @@ sub readFile
  
     open (F, "<$filename") 
         or die "Cannot open $filename: $!\n" ;
+    binmode(F) if $^O eq 'MSWin32';
     while (<F>)
       { $string .= $_ }
     close F ;
