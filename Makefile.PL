@@ -251,6 +251,7 @@ sub UpDowngrade
     my $opt = shift @ARGV || '' ;
     my $upgrade = ($opt =~ /^-upgrade/i);
     my $downgrade = ($opt =~ /^-downgrade/i);
+    push @ARGV, $opt unless $downgrade || $upgrade;
 
     if ($downgrade) {
         # From: use|no warnings "blah"

@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 4th December 2001
-# Version : 1.15
+# Created : 13 December 2001
+# Version : 1.16
 #
 #     Copyright (c) 1995-2001 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -22,7 +22,7 @@ local ($^W) = 1; #use warnings ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 use vars qw($deflateDefault $deflateParamsDefault $inflateDefault);
 
-$VERSION = "1.15" ;
+$VERSION = "1.16" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export

@@ -1,7 +1,7 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <Paul.Marquess@btinternet.com>
- * Created : 4th December 2001
- * Version : 1.15
+ * Created : 13 December 2001
+ * Version : 1.16
  *
  *   Copyright (c) 1995-2001 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
