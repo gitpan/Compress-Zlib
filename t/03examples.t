@@ -44,15 +44,21 @@ my $Inc = '' ;
 if ($^O eq 'VMS') {
   $Inc = '-"I[.blib.lib]" -"I[.blib.arch]"';
 }
+elsif ($^O eq 'MSWin32') {
+  foreach (@INC)
+   { $Inc .= qq["-I$_" ]}
+} 
 else {
   foreach (@INC)
    { $Inc .= "-I$_ " }
 } 
+
 my $Perl = '' ;
 $Perl = ($ENV{'FULLPERL'} or $^X or 'perl') ;
+$Perl = qq["$Perl"] if $^O eq 'MSWin32' ;
  
 $Perl = "$Perl -w" ;
-my $examples = "./examples";
+my $examples = $ENV{PERL_CORE} ? "../ext/Compress/Zlib/examples" : "./examples";
 
 my $hello1 = <<EOM ;
 hello

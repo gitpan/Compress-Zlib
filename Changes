@@ -1,6 +1,16 @@
 CHANGES
 -------
 
+  1.34 - 30 January 2005
+
+      * Fixed typo in the README
+
+      * Fixed examples.t on Win32 where paths have embedded whitespace.
+
+      * Fix for Cygwin and core integration from Jos I. Boumans
+
+      * Upgrade zlib source to 1.2.2
+
   1.33 - 14 January 2004
 
       * Reworked Makefile.PL to avoid creating a private copy of zlib. 

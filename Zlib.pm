@@ -1,9 +1,9 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 14 January 2004
-# Version : 1.33
+# Created : 30 January 2005
+# Version : 1.34
 #
-#     Copyright (c) 1995-2004 Paul Marquess. All rights reserved.
+#     Copyright (c) 1995-2005 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
 #     modify it under the same terms as Perl itself.
 #
@@ -22,7 +22,7 @@ local ($^W) = 1; #use warnings ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 use vars qw($deflateDefault $deflateParamsDefault $inflateDefault);
 
-$VERSION = "1.33" ;
+$VERSION = "1.34" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -117,7 +117,7 @@ sub gzopen($$)
  
     if (isaFilehandle $file) {
 	IO::Handle::flush($file) ;
-	my $offset = -f $file ? tell($file) : -1 ;
+	my $offset = tell($file) ;
         gzdopen_(fileno($file), $mode, $offset) ;
     }
     elsif (isaFilename $file) {

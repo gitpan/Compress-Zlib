@@ -1,9 +1,9 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <pmqs@cpan.org>
- * Created : 14 January 2004
- * Version : 1.33
+ * Created : 30 January 2005
+ * Version : 1.34
  *
- *   Copyright (c) 1995-2004 Paul Marquess. All rights reserved.
+ *   Copyright (c) 1995-2005 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
  *   modify it under the same terms as Perl itself.
  *
@@ -417,7 +417,7 @@ Zip_gzread(file, buf, len=4096)
 	unsigned	len
 	SV *		buf
 	voidp		bufp = NO_INIT
-	long		bufsize = 0 ;
+	uLong		bufsize = 0 ;
 	int		RETVAL = 0 ;
 	CODE:
 	if (SvREADONLY(buf) && PL_curcop != &PL_compiling)

@@ -22,9 +22,11 @@ my $ZLIB_LIB ;
 my $ZLIB_INCLUDE ;
 my $BUILD_ZLIB = 0 ;
 my $OLD_ZLIB = '' ;
+my $WALL = '';
+#$WALL = ' -Wall ';
 
-# Check if installing on CYGWIN
-if ($^O =~ /cygwin/i)
+# don't ask if MM_USE_DEFAULT is set -- enables perl core building on cygwin
+if ($^O =~ /cygwin/i and not $ENV{PERL_MM_USE_DEFAULT})
 {
     print <<EOM ;
 
@@ -66,7 +68,7 @@ WriteMakefile(
 	NAME   	 	=> 'Compress::Zlib',
 	VERSION_FROM  	=> 'Zlib.pm',
 	INC      	=> "-I$ZLIB_INCLUDE" ,
-	DEFINE   	=> "$OLD_ZLIB" ,
+	DEFINE   	=> "$OLD_ZLIB $WALL" ,
 	XS	 	=> { 'Zlib.xs'    => 'Zlib.c' },
 	'depend' 	=> { 'Makefile'	  => 'config.in' },
 	'clean' 	=> { FILES        => '*.c constants.h constants.xs' },
