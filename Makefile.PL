@@ -11,16 +11,12 @@ my $BUILD_ZLIB = 0 ;
 
 ParseCONFIG() ;
 
-my @files = ('Zlib.pm', glob("t/*.t"), glob("examples/*")) ;
-# See if the warnings pragma is available
-eval 'use warnings;';
-if ($@) {
-    # not there
-    oldWarnings(@files) ;
-} else {
-    # is there,
-    newWarnings(@files) ;
-}      
+my @files = ('Zlib.pm', glob("t/*.t"), grep(!/\.bak$/,  glob("examples/*"))) ;
+# warnings pragma is stable from 5.6.1 onward
+if ($] < 5.006001)
+ { oldWarnings(@files) }
+else
+ { newWarnings(@files) }    
 
 WriteMakefile(	
 	NAME   	 	=> 'Compress::Zlib',
