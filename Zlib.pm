@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 20th September 1999
-# Version : 1.06
+# Created : 27th November 1999
+# Version : 1.07
 #
 #     Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@ use strict ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD 
 	    $deflateDefault $deflateParamsDefault $inflateDefault) ;
 
-$VERSION = "1.06" ;
+$VERSION = "1.07" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -318,7 +318,7 @@ Compress::Zlib - Interface to zlib compression library
     $d->dict_adler() ;
 
     ($i, $status) = inflateInit( [OPT] ) ;
-    ($out, $status) = $i->inflate($buffer, [$last]) ;
+    ($out, $status) = $i->inflate($buffer) ;
     $i->dict_adler() ;
 
     $dest = compress($source) ;
@@ -1081,5 +1081,20 @@ when accessing zip files.
 
 gzclose will now get called automaticallly when the gzip object is
 destroyed.
+
+=back
+
+=head2 1.07 27 November 1999
+
+=over 5
+
+=item 1.
+
+ANSI-ified the static functions in Zlib.xs
+
+=item 2.
+
+Added the ability to build zlib along with the module.
+This feature is 90% based on a Makefile provided by Gurusamy Sarathy.
 
 =back

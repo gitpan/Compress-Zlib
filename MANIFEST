@@ -1,5 +1,6 @@
 ANNOUNCE
 MANIFEST
+Makefile.NT
 Makefile.PL
 README
 Zlib.pm

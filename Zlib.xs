@@ -1,7 +1,7 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <Paul.Marquess@btinternet.com>
- * Created : 20th September 1999
- * Version : 1.06
+ * Created : 27th November 1999
+ * Version : 1.07
  *
  *   Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
@@ -90,8 +90,12 @@ static int trace = 0 ;
 SV *sv_NULL ;
 
 static void
+#ifdef CAN_PROTOTYPE
+SetGzErrorNo(int error_no)
+#else
 SetGzErrorNo(error_no)
 int error_no ;
+#endif
 {
     char * errstr ;
     SV * gzerror_sv = perl_get_sv(GZERRNO, FALSE) ;
@@ -113,8 +117,12 @@ int error_no ;
 }
 
 static void
+#ifdef CAN_PROTOTYPE
+SetGzError(gzFile file)
+#else
 SetGzError(file)
 gzFile file ;
+#endif
 {
     int error_no ;
 
@@ -123,8 +131,12 @@ gzFile file ;
 }
 
 static di_stream *
+#ifdef CAN_PROTOTYPE
+InitStream(int bufsize)
+#else
 InitStream(bufsize)
     int bufsize ;
+#endif
 {
     di_stream *s = (di_stream *)safemalloc(sizeof(di_stream));
 
@@ -147,9 +159,13 @@ InitStream(bufsize)
 #define SIZE 4096
 
 static int
+#ifdef CAN_PROTOTYPE
+gzreadline(Compress__Zlib__gzFile file, SV * output)
+#else
 gzreadline(file, output)
   Compress__Zlib__gzFile file ;
   SV * output ;
+#endif
 {
 
     SV * store = file->buffer ;
@@ -197,9 +213,13 @@ gzreadline(file, output)
 }
 
 static SV* 
+#ifdef CAN_PROTOTYPE
+deRef(SV * sv, char * string)
+#else
 deRef(sv, string)
 SV * sv ;
 char * string;
+#endif
 {
     if (SvROK(sv)) {
 	sv = SvRV(sv) ;
@@ -219,20 +239,14 @@ char * string;
     return sv ;
 }
 
-static int
-not_here(s)
-char *s;
-{
-    croak("%s not implemented on this architecture", s);
-    return -1;
-}
-
-
-
 static double
+#ifdef CAN_PROTOTYPE
+constant(char * name, int arg)
+#else
 constant(name, arg)
 char *name;
 int arg;
+#endif
 {
     errno = 0;
     switch (*name) {
