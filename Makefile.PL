@@ -384,7 +384,7 @@ sub doUpDown
     my $our_sub = shift;
     my $warn_sub = shift;
 
-    local ($^I) = "" ;
+    local ($^I) = ($^O eq 'VMS') ? "_bak" : ".bak";
     local (@ARGV) = shift;
 
     while (<>)

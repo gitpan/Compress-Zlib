@@ -1,12 +1,17 @@
 CHANGES
 -------
 
+  1.31 - 29 October 2003
+
+      * Reinstated the creation of .bak files - $^I seems to need a
+        backup file on Windows. For OpenVMS, the extenstion _bak is used.
+
   1.30 - 28 October 2003
 
       * Bundled a sub-set of the zlib source with the module and changed
         the default make behaviour to build with the included zlib source.
-	The previous behaviour of using a pre-built zlib library is
-	still available for those that want it.
+        The previous behaviour of using a pre-built zlib library is
+        still available for those that want it.
 
       * Added prototypes to the subs in Zlib.pm that didn't already have
         them. Patch from Ed Avis.
