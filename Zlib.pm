@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
-# Created : 27th May 1999
-# Version : 1.04
+# Created : 3rd June 1999
+# Version : 1.05
 #
 #     Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -10,7 +10,7 @@
 
 package Compress::Zlib;
 
-require 5.003_05 ;
+require 5.004 ;
 require Exporter;
 require DynaLoader;
 use AutoLoader;
@@ -20,6 +20,8 @@ use IO::Handle ;
 use strict ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD 
 	    $deflateDefault $deflateParamsDefault $inflateDefault) ;
+
+$VERSION = "1.05" ;
 
 @ISA = qw(Exporter DynaLoader);
 # Items to export into callers namespace by default. Note: do not export
@@ -69,8 +71,6 @@ use vars qw($VERSION @ISA @EXPORT $AUTOLOAD
 	Z_VERSION_ERROR
 );
 
-
-$VERSION = "1.04" ;
 
 
 sub AUTOLOAD {
@@ -1024,5 +1024,21 @@ Means the module can be built with Perl 5.005_5*
 =item 1.
 
 Bug 19990527.001: compress(undef) core dumps -- Fixed.
+
+=back
+
+=head2 1.05 3 June 1999
+
+=over 5
+
+=item 1.
+
+Previous release used newSVpvn, which doesn't exist in 5.004_04 or
+earlier. Changed to use newSVpv instead.
+
+=item 2.
+
+The module needs Perl 5.004 or better, so updated the version checking in
+Zlib.pm and Makefile.PL
 
 =back

@@ -1,8 +1,8 @@
                                  Compress::Zlib
 
-                                  Version 1.04
+                                  Version 1.05
 
-                                  27th May 1999
+                                  3rd June 1999
 
              Copyright (c) 1995-1999 Paul Marquess. All rights reserved.
          This program is free software; you can redistribute it and/or
@@ -55,23 +55,44 @@ INSTALLATION
 
     make install
 
+TROUBLESHOOTING
+---------------
+
+HP-UX
+-----
+
+I've had a report that when building Compress::Zlib under HP-UX that it is
+necessary to have first built the zlib library with the -fpic option.
+
 FEEDBACK
 --------
 
-I have tested Compress::Zlib on both SunOS 4.1.3 (Sun C compiler) and
-Solaris 2.3 (Sun C compiler again). If you are building the module on
-another architecture I would appreciate a note to tell me how you got
-on. Although I am particularly interested to hear about any problems
-you encounter when building the system, I would still like to hear from
-you even if you don't.
+How to report a problem with Compress::Zlib.
 
-Things I particularly would like to know
+To help me help you, I need of the following information:
 
-   * The Operating system name and version, e.g. SunOS 4.1.3
-   * Architecture, e.g. Solaris
-   * C compiler, e.g. gcc
-   * Where there any warnings/errors printed by the C compiler? If so
-     please send the exact output if possible.
+ 1. The version of Perl and the operating system name and version you
+    are running. The output from running "perl -V" will tell me all I
+    need to know. If your perl doesn't understand the -V flag, then it's
+    too old to build this module -- you need to have Perl 5.004 or better.
+
+ 2. The version of Compress::Zlib you have. 
+    If you have successfully installed Compress::Zlib, this one-liner
+    will tell you:
+
+       perl -e 'use Compress::Zlib; print "ver $Compress::Zlib::VERSION\n"'
+
+    If you haven't installed Compress::Zlib then search Compress::Zlib.pm
+    for a line like this:
+
+      $VERSION = "1.05" ;
+
+ 3. The version of zlib you have installed.
+    If you don't know look at the beginning of the file zlib.h. 
+
+ 4. If you are having problems building Compress::Zlib, send me a
+    complete log of what happened.
+
 
 CHANGES
 -------
@@ -165,5 +186,14 @@ CHANGES
   1.04 - 27 May 1999
 
       * Bug 19990527.001: compress(undef) core dumps -- Fixed.	
+
+  1.05 - 3 June 1999
+
+      * Previous release used newSVpvn, which doesn't exist in 5.004_04
+        or earlier. Changed to use newSVpv instead.
+
+      * The module needs Perl 5.004 or better, so updated the version
+        checking in Zlib.pm and Makefile.PL
+
 
 Paul Marquess <Paul.Marquess@btinternet.com>
