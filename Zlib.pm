@@ -1,7 +1,7 @@
 # File	  : Zlib.pm
 # Author  : Paul Marquess
 # Created : 30 January 2005
-# Version : 1.34
+# Version : 1.35
 #
 #     Copyright (c) 1995-2005 Paul Marquess. All rights reserved.
 #     This program is free software; you can redistribute it and/or
@@ -12,7 +12,6 @@ package Compress::Zlib;
 
 require 5.004 ;
 require Exporter;
-require DynaLoader;
 use AutoLoader;
 use Carp ;
 use IO::Handle ;
@@ -22,9 +21,9 @@ local ($^W) = 1; #use warnings ;
 use vars qw($VERSION @ISA @EXPORT $AUTOLOAD);
 use vars qw($deflateDefault $deflateParamsDefault $inflateDefault);
 
-$VERSION = "1.34" ;
+$VERSION = "1.35" ;
 
-@ISA = qw(Exporter DynaLoader);
+@ISA = qw(Exporter);
 # Items to export into callers namespace by default. Note: do not export
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
@@ -44,6 +43,7 @@ $VERSION = "1.34" ;
 	crc32
 
 	ZLIB_VERSION
+    ZLIB_VERNUM
 
 	DEF_WBITS
 	OS_CODE
@@ -91,7 +91,14 @@ sub AUTOLOAD {
     goto &{$AUTOLOAD};
 }
 
-bootstrap Compress::Zlib $VERSION ;
+eval {
+    require XSLoader;
+    XSLoader::load('Compress::Zlib', $VERSION);
+} or do {
+    require DynaLoader;
+    local @ISA = qw(DynaLoader);
+    bootstrap Compress::Zlib $VERSION ;
+} ;
 
 # Preloaded methods go here.
 
@@ -855,8 +862,11 @@ Here is an example of using B<inflate>.
 =head1 COMPRESS/UNCOMPRESS
 
 Two high-level functions are provided by I<zlib> to perform in-memory
-compression. They are B<compress> and B<uncompress>. Two Perl subs are
-provided which provide similar functionality.
+compression/uncompression of RFC1950 data streams. They are called
+B<compress> and B<uncompress>.
+
+The two Perl subs defined below provide the equivalent
+functionality.
 
 =over 5
 
@@ -881,6 +891,9 @@ data. Otherwise it returns I<undef>.
 The source buffer can either be a scalar or a scalar reference.
 
 =back
+
+Please note: the two functions defined above are I<not> compatible with
+the Unix commands of the same name.
 
 =head1 GZIP INTERFACE
 

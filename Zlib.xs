@@ -1,7 +1,7 @@
 /* Filename: Zlib.xs
  * Author  : Paul Marquess, <pmqs@cpan.org>
  * Created : 30 January 2005
- * Version : 1.34
+ * Version : 1.35
  *
  *   Copyright (c) 1995-2005 Paul Marquess. All rights reserved.
  *   This program is free software; you can redistribute it and/or
@@ -348,6 +348,21 @@ BOOT:
 char*
 Zip_zlib_version()
 
+unsigned
+ZLIB_VERNUM()
+    CODE:
+#ifdef ZLIB_VERNUM
+        RETVAL = ZLIB_VERNUM ;
+#else
+        /* 1.1.4 => 0x1140 */
+        RETVAL  = (ZLIB_VERSION[0] - '0') << 12 ;
+        RETVAL += (ZLIB_VERSION[2] - '0') <<  8 ;
+        RETVAL += (ZLIB_VERSION[4] - '0') <<  4 ;
+#endif
+    OUTPUT:
+        RETVAL
+
+    
 
 void
 DispStream(s, message=NULL)
@@ -422,8 +437,7 @@ Zip_gzread(file, buf, len=4096)
 	CODE:
 	if (SvREADONLY(buf) && PL_curcop != &PL_compiling)
             croak("gzread: buffer parameter is read-only");
-        if (!SvUPGRADE(buf, SVt_PV))
-            croak("cannot use buf argument as lvalue");
+        SvUPGRADE(buf, SVt_PV);
         SvPOK_only(buf);
         SvCUR_set(buf, 0);
 	/* any left over from gzreadline ? */
@@ -468,8 +482,7 @@ gzreadline(file, buf)
 	CODE:
 	if (SvREADONLY(buf) && PL_curcop != &PL_compiling) 
             croak("gzreadline: buffer parameter is read-only"); 
-        if (!SvUPGRADE(buf, SVt_PV))
-            croak("cannot use buf argument as lvalue");
+        SvUPGRADE(buf, SVt_PV);
         SvPOK_only(buf);
 	/* sv_setpvn(buf, "", SIZE) ; */
         SvGROW(buf, SIZE) ;
@@ -503,7 +516,7 @@ Zip_gzflush(file, flush)
 	CLEANUP:
 	  SetGzError(file->gz) ;
 
-#define Zip_gzclose(file) gzclose(file->gz)
+#define Zip_gzclose(file) file->closed ? 0 : gzclose(file->gz)
 int
 Zip_gzclose(file)
 	Compress::Zlib::gzFile		file

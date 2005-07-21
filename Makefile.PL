@@ -22,11 +22,16 @@ my $ZLIB_LIB ;
 my $ZLIB_INCLUDE ;
 my $BUILD_ZLIB = 0 ;
 my $OLD_ZLIB = '' ;
+my $EXTRA_DEFINE = '';
 my $WALL = '';
 #$WALL = ' -Wall ';
 
+unless($ENV{PERL_CORE}) {
+    $ENV{PERL_CORE} = 1 if grep { $_ eq 'PERL_CORE=1' } @ARGV;
+}
+
 # don't ask if MM_USE_DEFAULT is set -- enables perl core building on cygwin
-if ($^O =~ /cygwin/i and not $ENV{PERL_MM_USE_DEFAULT})
+if ($^O =~ /cygwin/i and not $ENV{PERL_MM_USE_DEFAULT} and not $ENV{PERL_CORE})
 {
     print <<EOM ;
 
@@ -62,13 +67,13 @@ EOM
 ParseCONFIG() ;
 
 my @files = ('Zlib.pm', glob("t/*.t"), grep(!/\.bak$/,  glob("examples/*"))) ;
-UpDowngrade(@files);
+UpDowngrade(@files) unless $ENV{PERL_CORE} ;
 
 WriteMakefile(	
 	NAME   	 	=> 'Compress::Zlib',
 	VERSION_FROM  	=> 'Zlib.pm',
 	INC      	=> "-I$ZLIB_INCLUDE" ,
-	DEFINE   	=> "$OLD_ZLIB $WALL" ,
+	DEFINE   	=> "$OLD_ZLIB $WALL $EXTRA_DEFINE" ,
 	XS	 	=> { 'Zlib.xs'    => 'Zlib.c' },
 	'depend' 	=> { 'Makefile'	  => 'config.in' },
 	'clean' 	=> { FILES        => '*.c constants.h constants.xs' },
@@ -242,6 +247,8 @@ sub ParseCONFIG
         $ZLIB_INCLUDE = VMS::Filespec::vmspath($ZLIB_INCLUDE);
         $ZLIB_LIB = VMS::Filespec::vmspath($ZLIB_LIB);
     }
+
+    $EXTRA_DEFINE = $ENV{EXTRA_DEFINE} if defined $ENV{EXTRA_DEFINE};
 
     my $y = $ENV{'OLD_ZLIB'} || $Info{'OLD_ZLIB'} ;
     $OLD_ZLIB = '-DOLD_ZLIB' if $y and $y =~ /^yes|on|true|1$/i;

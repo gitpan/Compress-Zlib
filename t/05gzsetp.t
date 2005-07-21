@@ -5,27 +5,13 @@ local ($^W) = 1; #use warnings ;
 
 use Compress::Zlib ;
 
-BEGIN
+if (Compress::Zlib::ZLIB_VERNUM() < 0x1060 )
 {
- 
     my $ver = Compress::Zlib::zlib_version();
-    print "ver $ver\n";
-    if (defined $ver && $ver =~ /^(\d+)\.(\d+)\.(\d+)/ )
-    {
-        my $sum = $1 * 1000000 + $2 * 1000 + $3 ;
-     
-        if ($sum < 1_000_006) {
-            print "1..0 #  Skip: gzsetparams needs zlib 1.0.6 or better. You have $ver\n";
-            exit 0;
-        }
-    }
-    else
-    {
-        print "1..0 #  Skip: gzsetparams needs zlib 1.0.6 or better.\n";
-        exit 0;
-    }
+    print "1..0 # gzsetparams needs zlib 1.0.6 or better. You have $ver\n";
+    exit 0 ;
 }
- 
+
 sub ok
 {
     my ($no, $ok) = @_ ;
@@ -81,4 +67,6 @@ ok(1, Compress::Zlib::zlib_version eq ZLIB_VERSION) ;
 
     ok(10, $uncompressed  eq $input ) ;
     ok(11, ! $k->gzclose ) ;
+    unlink $name ;
 }
+
