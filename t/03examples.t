@@ -41,10 +41,10 @@ sub readFile
  
 
 my $Inc = '' ;
-if ($^O eq 'VMS') {
-  $Inc = '-"I[.blib.lib]" -"I[.blib.arch]"';
-}
-elsif ($^O eq 'MSWin32') {
+#if ($^O eq 'VMS') {
+#  $Inc = '-"I[.blib.lib]" -"I[.blib.arch]"';
+#}
+if ($^O eq 'MSWin32') {
   foreach (@INC)
    { $Inc .= qq["-I$_" ]}
 } 

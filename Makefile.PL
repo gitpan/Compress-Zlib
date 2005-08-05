@@ -193,9 +193,6 @@ MyTrebleCheck:
 	(echo found unexpected $$^W ; exit 1)
 	@echo All is ok.
 
-Zlib.xs:	typemap
-	@$(TOUCH) Zlib.xs
-
 EOM
 
     return $postamble;
