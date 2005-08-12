@@ -40,18 +40,7 @@ sub readFile
 }
  
 
-my $Inc = '' ;
-#if ($^O eq 'VMS') {
-#  $Inc = '-"I[.blib.lib]" -"I[.blib.arch]"';
-#}
-if ($^O eq 'MSWin32') {
-  foreach (@INC)
-   { $Inc .= qq["-I$_" ]}
-} 
-else {
-  foreach (@INC)
-   { $Inc .= "-I$_ " }
-} 
+my $Inc = join " ", map qq["-I$_"] => @INC;
 
 my $Perl = '' ;
 $Perl = ($ENV{'FULLPERL'} or $^X or 'perl') ;
@@ -171,4 +160,7 @@ ok(9, $a eq $hello1 . $hello2) ;
 }
 
 
-unlink $file1, $file2, $stderr ;
+END
+{
+    for ($file1, $file2, $stderr) { 1 while unlink $_ } ;
+}

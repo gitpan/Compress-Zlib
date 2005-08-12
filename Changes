@@ -1,6 +1,10 @@
 CHANGES
 -------
 
+  1.37 - 12 August 2005
+
+      * Change to t/03examples.t for VMS from Abe Timmerman
+
   1.36 - 3 August 2005
 
       * Renamed zlib-src-1.2.3 to zlib-src to help VMS
