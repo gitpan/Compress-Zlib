@@ -11,7 +11,7 @@ require Exporter ;
 
 use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS $RawDeflateError);
 
-$VERSION = '2.000_00';
+$VERSION = '2.000_01';
 $RawDeflateError = '';
 
 @ISA = qw(Exporter IO::BaseDeflate);

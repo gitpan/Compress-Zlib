@@ -8,7 +8,7 @@ use IO::Gunzip;
 require Exporter ;
 use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS $RawInflateError);
 
-$VERSION = '2.000_00';
+$VERSION = '2.000_01';
 $RawInflateError = '';
 
 @ISA    = qw(Exporter IO::BaseInflate);

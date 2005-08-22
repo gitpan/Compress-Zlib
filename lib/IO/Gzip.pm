@@ -12,7 +12,7 @@ require Exporter ;
 
 use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS $GzipError);
 
-$VERSION = '2.000_00';
+$VERSION = '2.000_01';
 $GzipError = '' ;
 
 @ISA    = qw(Exporter IO::BaseDeflate);
@@ -95,7 +95,7 @@ BEGIN
 }
  
 
-$VERSION = '2.000_00';
+$VERSION = '2.000_01';
 
 #Can't locate object method "SWASHNEW" via package "utf8" (perhaps you forgot to load "utf8"?) at .../ext/Compress-Zlib/Gzip/blib/lib/Compress/Zlib/Common.pm line 16.
 

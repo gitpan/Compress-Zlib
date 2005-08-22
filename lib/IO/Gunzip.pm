@@ -14,7 +14,7 @@ use vars qw($VERSION @ISA @EXPORT_OK $GunzipError);
 @EXPORT_OK = qw( $GunzipError gunzip );
 $GunzipError = '';
 
-$VERSION = '2.000_00';
+$VERSION = '2.000_01';
 
 sub new
 {
@@ -35,7 +35,7 @@ local ($^W) = 1; #use warnings;
 
 use vars qw($VERSION %EXPORT_TAGS);
 
-$VERSION = '2.000_00';
+$VERSION = '2.000_01';
 
 use Compress::Zlib 2 ;
 use Compress::Zlib::Common ;

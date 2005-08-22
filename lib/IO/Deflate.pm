@@ -10,7 +10,7 @@ use IO::Inflate;
 
 use vars qw($VERSION @ISA @EXPORT_OK %EXPORT_TAGS $DeflateError);
 
-$VERSION = '2.000_00';
+$VERSION = '2.000_01';
 $DeflateError = '';
 
 @ISA = qw(Exporter IO::BaseDeflate);

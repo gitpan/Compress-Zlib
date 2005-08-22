@@ -16,7 +16,7 @@ local ($^W) = 1; #use warnings ;
 # use bytes ;
 use vars qw($VERSION $XS_VERSION @ISA @EXPORT $AUTOLOAD);
 
-$VERSION = '2.000_00';
+$VERSION = '2.000_01';
 $XS_VERSION = $VERSION; 
 $VERSION = eval $VERSION;
 

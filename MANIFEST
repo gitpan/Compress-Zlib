@@ -7,7 +7,6 @@ lib/IO/AnyInflate.pm
 lib/IO/Deflate.pm
 lib/IO/RawDeflate.pm
 lib/Compress/Gzip/Constants.pm
-lib/Compress/Gzip/Info.pm
 lib/Compress/Zlib/FileConstants.pm
 lib/Compress/Zlib/Common.pm
 lib/Compress/Zlib/ParseParameters.pm
