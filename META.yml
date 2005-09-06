@@ -1,24 +1,10 @@
---- #YAML:1.0
-name: Compress::ZLib
-version: 2.000
-author:
-  - Paul Marquess <pmqs@cpan.org>
-abstract: |-
-  Interface to zlib compression library
-license: perl
-requires: 
-  perl: 5.004
-recommends: {}
-build_requires: 
-  Test::More: 0
-conflicts: {}
-provides:
-  Compress::Zlib:
-    file: lib/Compress::Zlib.pm
-    version: 2.000
-  Compress::Zlib:Inflate
-    file: lib/Compress::Zlib.pm
-    version: 2.000
-  Compress::Zlib:Deflate
-    file: lib/Compress::Zlib.pm
-    version: 2.000
+# http://module-build.sourceforge.net/META-spec.html
+#XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
+name:         Compress-Zlib
+version:      1.38
+version_from: Zlib.pm
+installdirs:  site
+requires:
+
+distribution_type: module
+generated_by: ExtUtils::MakeMaker version 6.17
