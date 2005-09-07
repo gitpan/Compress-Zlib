@@ -1,49 +1,29 @@
 
-use strict ;
-local ($^W) = 1; #use warnings ;
+use lib 't';
 
-sub ok
-{
-    my ($no, $ok) = @_ ;
+use strict;
+local ($^W) = 1; #use warnings;
+# use bytes;
 
-    #++ $total ;
-    #++ $totalBad unless $ok ;
+use Test::More ;
+use MyTestUtils;
 
-    print "ok $no\n" if $ok ;
-    print "not ok $no\n" unless $ok ;
-    printf "# Failed test at line %d\n", (caller)[2] unless $ok ;
+BEGIN 
+{ 
+    plan(skip_all => "Examples needs Perl 5.005 or better - you have Perl $]" )
+        if $] < 5.005 ;
+    
+    # use Test::NoWarnings, if available
+    my $extra = 0 ;
+    $extra = 1
+        if eval { require Test::NoWarnings ;  import Test::NoWarnings; 1 };
 
-    $ok;
+    plan tests => 25 + $extra ;
 }
 
-sub writeFile
-{
-    my($filename, @strings) = @_ ;
-    open (F, ">$filename") 
-        or die "Cannot open $filename: $!\n" ;
-    binmode(F);
-    foreach (@strings)
-      { print F }
-    close F ;
-}
-
-sub readFile
-{
-    my ($filename) = @_ ;
-    my ($string) = '' ;
- 
-    open (F, "<$filename") 
-        or die "Cannot open $filename: $!\n" ;
-    binmode(F);
-    while (<F>)
-      { $string .= $_ }
-    close F ;
-    $string ;
-}
- 
 
 my $Inc = join " ", map qq["-I$_"] => @INC;
-
+ 
 my $Perl = '' ;
 $Perl = ($ENV{'FULLPERL'} or $^X or 'perl') ;
 $Perl = qq["$Perl"] if $^O eq 'MSWin32' ;
@@ -76,7 +56,6 @@ EOM
 
 my @hello2 = grep(s/$/\n/, split(/\n/, $hello2)) ;
 
-print "1..13\n" ;
 
 
 
@@ -85,6 +64,7 @@ print "1..13\n" ;
 
 my $file1 = "hello1.gz" ;
 my $file2 = "hello2.gz" ;
+
 unlink $file1, $file2 ;
 
 my $hello1_uue = <<'EOM';
@@ -105,27 +85,35 @@ EOM
 }
 
  
+title "gzcat.zlib" ;
+$a = `$Perl $Inc ${examples}/gzcat.zlib $file1 $file2 2>&1` ;
+
+is $?, 0, "  exit status is 0" ;
+is $a, $hello1 . $hello2, "  content is ok" ;
+
+title "gzcat - command line" ;
 $a = `$Perl $Inc ${examples}/gzcat $file1 $file2 2>&1` ;
 
-ok(1, $? == 0) 
-    or print "# \$\? == [$?]\n";
-ok(2, $a eq $hello1 . $hello2) 
-    or print "# got $a\n";
-#print "? = $? [$a]\n";
+is $?, 0, "  exit status is 0" ;
+is $a, $hello1 . $hello2, "  content is ok";
+
+title "gzcat - stdin" ;
+$a = `$Perl $Inc ${examples}/gzcat <$file1 2>&1` ;
+
+is $?, 0, "  exit status is 0" ;
+is $a, $hello1, "  content is ok";
 
 
 # gzgrep
 # ######
 
+title "gzgrep";
 $a = ($^O eq 'MSWin32' || $^O eq 'VMS'
      ? `$Perl $Inc ${examples}/gzgrep "^x" $file1 $file2 2>&1`
      : `$Perl $Inc ${examples}/gzgrep '^x' $file1 $file2 2>&1`) ;
-ok(3, $? == 0) 
-    or print "# \$\? == [$?]\n";
+is $?, 0, "  exit status is 0" ;
 
-ok(4, $a eq join('', grep(/^x/, @hello1, @hello2))) 
-    or print "# got $a\n";
-#print "? = $? [$a]\n";
+is $a, join('', grep(/^x/, @hello1, @hello2)), "  content is ok" ;
 
 
 unlink $file1, $file2 ;
@@ -140,36 +128,35 @@ unlink $stderr ;
 writeFile($file1, $hello1) ;
 writeFile($file2, $hello2) ;
 
+title "filtdef" ;
 # there's no way to set binmode on backticks in Win32 so we won't use $a later
 $a = `$Perl $Inc ${examples}/filtdef $file1 $file2 2>$stderr` ;
-ok(5, $? == 0)
-    or print "# \$\? == [$?]\n";
-ok(6, -s $stderr == 0) ;
+is $?, 0, "  exit status is 0" ;
+is -s $stderr, 0, "  no stderr" ;
 
 unlink $stderr;
+
+title "filtdef | filtinf";
 $a = `$Perl $Inc ${examples}/filtdef $file1 $file2 | $Perl $Inc ${examples}/filtinf 2>$stderr`;
-ok(7, $? == 0) 
-    or print "# \$\? == [$?]\n";
-ok(8, -s $stderr == 0) ;
-ok(9, $a eq $hello1 . $hello2) 
-    or print "# got $a\n";
+is $?, 0, "  exit status is 0" ;
+is -s $stderr, 0, "  no stderr" ;
+is $a, $hello1 . $hello2, "  content is ok";
 
 # gzstream
 # ########
 
 {
+    title "gzstream" ;
     writeFile($file1, $hello1) ;
     $a = `$Perl $Inc ${examples}/gzstream <$file1 >$file2 2>$stderr` ;
-    ok(10, $? == 0) 
-        or print "# \$\? == [$?]\n";
-    ok(11, -s $stderr == 0) ;
+    is $?, 0, "  exit status is 0" ;
+    is -s $stderr, 0, "  no stderr" ;
 
+    title "gzcat" ;
     my $b = `$Perl $Inc ${examples}/gzcat $file2 2>&1` ;
-    ok(12, $? == 0) 
-        or print "# \$\? == [$?]\n";
-    ok(13, $b eq $hello1 ) 
-        or print "# got $b\n";
-
+    is $?, 0, "  exit status is 0" ;
+    is $b, $hello1, "  content is ok" ;
+    #print "? = $? [$b]\n";
 }
 
 
@@ -177,3 +164,4 @@ END
 {
     for ($file1, $file2, $stderr) { 1 while unlink $_ } ;
 }
+
