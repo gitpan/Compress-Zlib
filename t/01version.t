@@ -1,36 +1,34 @@
 
-use lib 't';
 use strict ;
 local ($^W) = 1; #use warnings ;
 
-use Test::More ;
+use Compress::Zlib ;
 
-BEGIN 
-{ 
-    # use Test::NoWarnings, if available
-    my $extra = 0 ;
-    $extra = 1
-        if eval { require Test::NoWarnings ;  import Test::NoWarnings; 1 };
+sub ok
+{
+    my ($no, $ok) = @_ ;
 
-    plan tests => 2 + $extra ;
+    #++ $total ;
+    #++ $totalBad unless $ok ;
 
-    use_ok('Compress::Zlib', 2) ; 
+    print "ok $no\n" if $ok ;
+    print "not ok $no\n" unless $ok ;
+    return $ok;
 }
 
-# Check zlib_version and ZLIB_VERSION are the same.
+print "1..1\n" ;
 
+# Check zlib_version and ZLIB_VERSION are the same.
 my $zlib_h = ZLIB_VERSION ;
 my $libz   = Compress::Zlib::zlib_version;
-
-is($zlib_h, $libz, "ZLIB_VERSION ($zlib_h) matches Compress::Zlib::zlib_version")
-    or diag <<EOM;
-
-The version of zlib.h does not match the version of libz
- 
-You have zlib.h version $zlib_h
-     and libz   version $libz
- 
-You probably have two versions of zlib installed on your system.
-Try removing the one you don't want to use and rebuild.
+ok(1, $zlib_h eq $libz) ||
+print <<EOM;
+# The version of zlib.h does not match the version of libz
+# 
+# You have zlib.h version $zlib_h
+#      and libz   version $libz
+# 
+# You probably have two versions of zlib installed on your system.
+# Try removing the one you don't want to use and rebuild.
 EOM
 
