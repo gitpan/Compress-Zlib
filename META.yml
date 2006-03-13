@@ -1,13 +1,17 @@
 # http://module-build.sourceforge.net/META-spec.html
 #XXXXXXX This is a prototype!!!  It will change in the future!!! XXXXX#
 name:         Compress-Zlib
-version:      2.000_09
+version:      2.000_10
 version_from: lib/Compress/Zlib.pm
 installdirs:  site
 requires:
     Compress::Raw::Zlib:           0
     IO::Compress::Base:            0
-    IO::Compress::Zlib:            0
+    IO::Compress::Base::Common:    0
+    IO::Compress::Gzip:            0
+    IO::Compress::Gzip::Constants: 0
+    IO::Uncompress::Base:          0
+    IO::Uncompress::Gunzip:        0
     Scalar::Util:                  0
 
 distribution_type: module
