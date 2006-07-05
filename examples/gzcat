@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl
 
 use strict ;
-use warnings ;
+local ($^W) = 1; #use warnings ;
 
 use Compress::Zlib ;
 
@@ -15,8 +15,11 @@ my $filename ;
 foreach my $filename (@ARGV) {
     my $buffer ;
 
-    my $gz = gzopen($filename, "rb") 
-         or die "Cannot open $filename: $gzerrno\n" ;
+    my $file = $filename ;
+    $file = \*STDIN if $file eq '-' ;
+
+    my $gz = gzopen($file, "rb") 
+         or die "Cannot open $file: $gzerrno\n" ;
 
     print $buffer while $gz->gzread($buffer) > 0 ;
 

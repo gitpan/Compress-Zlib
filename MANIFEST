@@ -1,24 +1,46 @@
-README
-t/01version.t
-t/03zlib-v1.t
-t/05examples.t
-t/06gzsetp.t
-t/08encoding.t
-t/14gzopen.t
-t/99pod.t
-t/Test/Builder.pm
-t/Test/More.pm
-t/Test/Simple.pm
-t/compress/CompTestUtils.pm
-Makefile.PL
-private/MakeUtil.pm
+ANNOUNCE
 MANIFEST
-lib/Compress/Zlib.pm
-examples/filtdef     Perl
-examples/filtinf     Perl
-examples/gzcat       Perl
-examples/gzgrep      Perl
-examples/gzstream        Perl
+Makefile.PL
+README
 Changes
-pod/FAQ.pod
+Zlib.pm
+Zlib.xs
+config.in
+examples/filtdef
+examples/filtinf
+examples/gzcat
+examples/gzgrep
+examples/gzstream
+fallback.h
+fallback.xs
+hints/mpeix.pl
+t/01version.t
+t/02zlib.t
+t/03examples.t
+t/04encoding.t
+t/05gzsetp.t
+t/06gzdopen.t
+typemap
+zlib-src/adler32.c
+zlib-src/compress.c
+zlib-src/crc32.c
+zlib-src/crc32.h
+zlib-src/deflate.c
+zlib-src/deflate.h
+zlib-src/gzio.c
+zlib-src/infback.c
+zlib-src/inffast.c
+zlib-src/inffast.h
+zlib-src/inffixed.h
+zlib-src/inflate.c
+zlib-src/inflate.h
+zlib-src/inftrees.c
+zlib-src/inftrees.h
+zlib-src/trees.c
+zlib-src/trees.h
+zlib-src/uncompr.c
+zlib-src/zconf.h
+zlib-src/zlib.h
+zlib-src/zutil.c
+zlib-src/zutil.h
 META.yml                                 Module meta-data (added by MakeMaker)
