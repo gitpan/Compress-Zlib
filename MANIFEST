@@ -1,4 +1,5 @@
 README
+t/000prereq.t
 t/01version.t
 t/03zlib-v1.t
 t/05examples.t
