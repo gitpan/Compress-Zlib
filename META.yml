@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                Compress-Zlib
-version:             2.006
+version:             2.007
 abstract:            Interface to zlib compression library
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.36
