@@ -3,7 +3,7 @@
 use strict ;
 require 5.004 ;
 
-$::VERSION = '2.014' ;
+$::VERSION = '2.015' ;
 
 use private::MakeUtil;
 use ExtUtils::MakeMaker 5.16 ;
@@ -11,25 +11,6 @@ use ExtUtils::MakeMaker 5.16 ;
 
 UpDowngrade(getPerlFiles('MANIFEST')) 
     unless $ENV{PERL_CORE};
-
-# Modules supplied by this distribution    
-my @myModules = qw( Compress::Zlib);
-
-# Direct dependencies                  
-my @MainPREREQ = qw(Compress::Raw::Zlib
-                    IO::Compress::Base
-                    IO::Compress::Base::Constants
-                    IO::Uncompress::Base
-                    IO::Compress::Gzip
-                    IO::Compress::Gzip::Constants
-                    IO::Uncompress::Gunzip
-                   );
-
-# Get indirect dependencies that will break if we install this version
-push @MainPREREQ, FindBrokenDependencies($::VERSION, @myModules)
-    unless $ENV{PERL_CORE} ;                   
-    
-my %MainPREREQ = map { $_ => $::VERSION } @MainPREREQ; 
 
 WriteMakefile( 
     NAME         => 'Compress::Zlib',
@@ -43,7 +24,13 @@ WriteMakefile(
     (
       $ENV{SKIP_FOR_CORE}
         ? (MAN3PODS    => {})
-	    : (PREREQ_PM   => { %MainPREREQ,
+	    : (PREREQ_PM   => { 'Compress::Raw::Zlib'           => $::VERSION,
+		                    'IO::Compress::Base'            => $::VERSION,
+		                    'IO::Compress::Base::Common'    => $::VERSION,
+		                    'IO::Uncompress::Base'          => $::VERSION,
+		                    'IO::Compress::Gzip'            => $::VERSION,
+		                    'IO::Compress::Gzip::Constants' => $::VERSION,
+		                    'IO::Uncompress::Gunzip'        => $::VERSION,
 		                    'Scalar::Util'                  => 0,
                           }
 	      )
